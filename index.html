@@ -48,6 +48,63 @@
     }
   });
 </script>
+
+<input type="file" id="fileInput" />
+<button onclick="uploadFile()">アップロード</button>
+
+<script>
+  function uploadFile() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('ファイルを選択してください');
+      return;
+    }
+
+    const storageRef = storage.ref('uploads/' + file.name);
+    const uploadTask = storageRef.put(file);
+
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        // 進捗表示（任意）
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+      }, 
+      (error) => {
+        // エラーハンドリング
+        alert('アップロードに失敗しました: ' + error.message);
+      }, 
+      () => {
+        // アップロード成功時の処理
+        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+          alert('アップロード成功！ファイルURL: ' + downloadURL);
+        });
+      }
+    );
+  }
+</script>
+
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIza...your_api_key...",
+    authDomain: "your-project-id.firebaseapp.com",
+    projectId: "your-project-id",
+    storageBucket: "your-project-id.appspot.com",
+    messagingSenderId: "xxxxxxx",
+    appId: "x:xxx:web:xxxx"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const storage = firebase.storage();
+</script>
+
   </body>
   <script src="app.js"></script>
 </html>
