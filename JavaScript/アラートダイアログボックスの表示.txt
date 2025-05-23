@@ -1,0 +1,13 @@
+window.alert('XXX');
+
+アラート形式でXXXを表示
+
+
+window.alert(2+3);
+
+アラート形式で5を表示
+
+
+window.alert('2+3');
+
+アラート形式で2+3を表示
