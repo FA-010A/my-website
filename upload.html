@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ファイルアップロード</title>
+</head>
+<body>
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">アップロード</button>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+  <script>
+    // Firebase設定（あなたのfirebaseConfigで上書き）
+    const firebaseConfig = {
+  apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
+  authDomain: "my-website-2b713.firebaseapp.com",
+  projectId: "my-website-2b713",
+  storageBucket: "my-website-2b713.firebasestorage.app",
+  messagingSenderId: "474696820051",
+  appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
+  measurementId: "G-52N4LS8E57"
+};
+    firebase.initializeApp(firebaseConfig);
+    const storage = firebase.storage();
+
+    function uploadFile() {
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return alert("ファイルを選択してください");
+
+      const ref = storage.ref('uploads/' + file.name);
+      const uploadTask = ref.put(file);
+
+      uploadTask.on('state_changed',
+        snapshot => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('進捗:', progress + '%');
+        },
+        error => {
+          alert('エラー: ' + error.message);
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then(url => {
+            alert('アップロード成功！URL: ' + url);
+          });
+        }
+      );
+    }
+  </script>
+</body>
+</html>
