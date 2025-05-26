@@ -1,18 +1,18 @@
 console.log('XXX');
 
-ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã«XXXã‚’å‡ºåŠ›
+ƒRƒ“ƒ\[ƒ‹‚ÉXXX‚ðo—Í
 
 
 console.log(2+3);
 
-ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã«5ã‚’å‡ºåŠ›
+ƒRƒ“ƒ\[ƒ‹‚É5‚ðo—Í
 
 
 console.log(123-35);
 
-ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã«88ã‚’å‡ºåŠ›
+ƒRƒ“ƒ\[ƒ‹‚É88‚ðo—Í
 
 
 console.log('2+3');
 
-ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ã«2+3ã‚’å‡ºåŠ›
+ƒRƒ“ƒ\[ƒ‹‚É2+3‚ðo—Í
