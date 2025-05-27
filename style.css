@@ -1,55 +1,11 @@
-/* 全ての要素の余白とパディングをリセット */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* サイズ計算にパディング・ボーダーを含める */
-}
+@charset "utf-8";
 
-/* ページ全体のフォントと背景色 */
-body {
-  font-family: Arial, sans-serif; /* 読みやすいフォント */
-  background-color: #fafafa;      /* 淡いグレー背景 */
-  color: #333;                    /* 標準的な文字色 */
-  padding: 20px;                  /* ページの内側余白 */
+h1{
+    background-color: rgb(174, 82, 244);
 }
-
-/* 見出しのスタイル */
-h1 {
-  font-size: 2rem;     /* 大きめの文字 */
-  margin-bottom: 16px; /* 下に余白を入れる */
-  color: #222;         /* 少し濃い文字色 */
+html{
+    background-color: antiquewhite;
 }
-
-/* 段落のスタイル */
-p {
-  font-size: 1rem;     /* 標準的な文字サイズ */
-  line-height: 1.5;    /* 読みやすい行間 */
-  margin-bottom: 12px; /* 下に余白 */
-}
-
-/* リンクの基本スタイル */
-a {
-  color: #007BFF;          /* 青色リンク */
-  text-decoration: none;   /* 下線なし */
-}
-
-/* リンクのホバー時のスタイル */
-a:hover {
-  text-decoration: underline; /* 下線を表示 */
-}
-
-/* シンプルなボタン */
-button {
-  background-color: #007BFF; /* 青色背景 */
-  color: white;              /* 白文字 */
-  border: none;              /* ボーダーなし */
-  padding: 10px 20px;        /* 余白 */
-  border-radius: 4px;        /* 少し丸み */
-  cursor: pointer;           /* マウスカーソルをポインターに */
-  font-size: 1rem;           /* 文字サイズ */
-}
-
-/* ボタンのホバー時 */
-button:hover {
-  background-color: #0056b3; /* 濃い青に変化 */
+p{
+    background-color: rgb(124, 203, 249);
 }
