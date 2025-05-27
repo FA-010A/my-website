@@ -1,11 +1,32 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>オフライン</title>
-</head>
-<body>
-  <h1>オフラインページ</h1>
-  <p>ネットワークに接続されていません。</p>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" type="text/css" />
+    <title>プログラミング辞書</title>
+    <h1>プログラミング辞書</h1>
+  </head>
+  <body>
+    <p>ここに文章を記述</p>
+    <p>現在はオフラインです</p><script></script>
+    <object
+      data="memo.txt"
+      type="text/plain"
+      width="100%"
+      height="100%"
+    ></object>
+    <div id="nav">
+      <ul>
+        <li><a href="html/html.html">HTML</a></li>
+        <li><a href="css/css.html">CSS</a></li>
+        <li><a href="JavaScript/JavaScript.html">JavaScript</a></li>
+        <li><a href="Java/Java.html">Java</a></li>
+        <li><a href="Python/Python.html">Python</a></li>
+      </ul>
+    </div>
+    <button id="openBtn">フォルダを選択</button>
+    <ul id="fileList"></ul>
+  </body>
+  <script src="app.js"></script>
 </html>
