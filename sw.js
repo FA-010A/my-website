@@ -8,7 +8,7 @@ self.addEventListener('install', event => {
         '/',
         '/index.html',
         '/offline.html',
-        '/main.js'
+        '/app.js'
       ])
     )
   );
