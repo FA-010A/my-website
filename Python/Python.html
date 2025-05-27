@@ -45,7 +45,7 @@
       const file = document.getElementById('fileInput').files[0];
       if (!file) return alert("ファイルを選択してください");
 
-      const ref = storage.ref('uploads/Python' + file.name);
+      const ref = storage.ref('uploads/Python/' + file.name);
       const uploadTask = ref.put(file);
 
       uploadTask.on('state_changed',
