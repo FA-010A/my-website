@@ -1,58 +1,11 @@
-/* ベースのリセット */
-* {
-  margin: 0;           /* 余白をリセット */
-  padding: 0;          /* パディングもリセット */
-  box-sizing: border-box; /* サイズ計算にパディングとボーダーを含める */
-}
+@charset "utf-8";
 
-/* ボディ全体のスタイル */
-body {
-  font-family: 'Helvetica Neue', Arial, sans-serif; /* きれいで読みやすいフォント */
-  background-color: #f7f9fc;  /* 優しいライトグレー背景 */
-  color: #333;                /* 文字色は濃いグレー */
-  line-height: 1.6;           /* 行間を広めにして読みやすく */
-  padding: 20px;              /* ページ全体に余白 */
+h1{
+    background-color: rgb(174, 82, 244);
 }
-
-/* 見出し */
-h1, h2, h3 {
-  color: #2c3e50;  /* 濃いネイビー系カラー */
-  margin-bottom: 1rem; /* 見出しの下に余白 */
+html{
+    background-color: antiquewhite;
 }
-
-/* ボタンのスタイル */
-button {
-  background-color: #3498db; /* 爽やかなブルー */
-  color: white;              /* 文字は白 */
-  border: none;              /* ボーダーなし */
-  padding: 10px 20px;        /* 十分なパディング */
-  border-radius: 5px;        /* 角丸 */
-  cursor: pointer;           /* マウスオーバー時に手のアイコン */
-  transition: background-color 0.3s ease; /* なめらかな色変化 */
-}
-
-/* ボタンホバー時 */
-button:hover {
-  background-color: #2980b9; /* 少し濃いブルーに変化 */
-}
-
-/* リンク */
-a {
-  color: #3498db;          /* ボタンと同じブルー */
-  text-decoration: none;   /* 下線なし */
-}
-
-/* リンクホバー時 */
-a:hover {
-  text-decoration: underline; /* ホバー時に下線表示 */
-}
-
-/* コンテナ（中央寄せ＆最大幅制限） */
-.container {
-  max-width: 960px; /* 最大幅 */
-  margin: 0 auto;   /* 水平方向中央寄せ */
-  background-color: white; /* 白背景 */
-  padding: 20px;    /* 内側余白 */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* ほんのり影 */
-  border-radius: 8px; /* 角丸 */
+p{
+    background-color: rgb(124, 203, 249);
 }
