@@ -41,14 +41,8 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('push', event => {
-    const message = event.data.text();// 文字列を取得
-    message="test"
-    event.waitUntil(
-        self.registration.showNotification(message)
-    );
+  const message = event.data ? event.data.text() : "test";
+  event.waitUntil(
+    self.registration.showNotification(message)
+  );
 });
-self.addEventListener('DOMContentLoaded',function(e){
-    console.info(e);
-    self.registration.update()
-    
-})

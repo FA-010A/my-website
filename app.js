@@ -5,5 +5,3 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('SW registration failed:', err));
   });
 }
-self.addEventListener('install', () => console.log('install Ver1'));
-self.addEventListener('activate', () => console.log('activate Ver1'));
