@@ -64,38 +64,59 @@
     }
   </script>
 
+<h1>アップロード済ファイル一覧</h1>
+<div id="fileList">読み込み中...</div>
 
-  <h1>アップロード済ファイル一覧</h1>
-  <div id="fileList">読み込み中...</div>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script>
+  // Firebase初期化（必要な設定を記入）
+  firebaseConfig = {
+    // ↓ここにあなたのFirebase設定を記述
+  };
+  firebase.initializeApp(firebaseConfig);
 
-  <script>
-    const fileListDiv = document.getElementById('fileList');
-    fileListDiv.textContent = ''; // 初期化
-    const listRef = storage.ref('uploads/Java');
+  storage = firebase.storage();
+  const fileListDiv = document.getElementById('fileList');
+  fileListDiv.textContent = ''; // 初期化
 
-    listRef.listAll().then((res) => {
-      if (res.items.length === 0) {
-        fileListDiv.textContent = 'ファイルが見つかりません';
-        return;
-      }
+  const listRef = storage.ref('uploads/Java');
 
-      res.items.forEach((itemRef) => {
-        itemRef.getDownloadURL().then((url) => {
-          const a = document.createElement('a');
-          a.href = url;
-          a.textContent = itemRef.name;
-          a.target = '_blank';
-          fileListDiv.appendChild(a);
-          fileListDiv.appendChild(document.createElement('br'));
-        });
+  listRef.listAll().then((res) => {
+    if (res.items.length === 0) {
+      fileListDiv.textContent = 'ファイルが見つかりません';
+      return;
+    }
+
+    res.items.forEach((itemRef) => {
+      itemRef.getDownloadURL().then(async (url) => {
+        try {
+          // UTF-8としてファイル内容を読み取る
+          const response = await fetch(url);
+          const text = await response.text(); // UTF-8で読み込み
+          
+          const container = document.createElement('div');
+          container.style.marginBottom = '1em';
+
+          const name = document.createElement('strong');
+          name.textContent = itemRef.name;
+
+          const pre = document.createElement('pre');
+          pre.textContent = text;
+
+          container.appendChild(name);
+          container.appendChild(pre);
+          fileListDiv.appendChild(container);
+        } catch (err) {
+          console.error("読み込みエラー:", err);
+        }
       });
-    }).catch((error) => {
-      fileListDiv.textContent = 'エラー: ' + error.message;
     });
-  </script>
+  }).catch((error) => {
+    fileListDiv.textContent = 'エラー: ' + error.message;
+  });
+</script>
 </body>
 </html>
