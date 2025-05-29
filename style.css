@@ -1,12 +1,13 @@
 @charset "utf-8";
 
 h1{
-    background-color: rgb(174, 82, 244);
+    background-color: rgb(198, 160, 227);
 }
 html{
     background-color: antiquewhite;
 }
 p{
+    display:inline-block;
     background-color: rgb(124, 203, 249);
 }
 object{
