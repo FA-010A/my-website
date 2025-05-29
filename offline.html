@@ -8,8 +8,7 @@
     <h1>プログラミング辞書</h1>
   </head>
   <body>
-    <p>ここに文章を記述</p>
-    <p>現在はオフラインです</p><script></script>
+    <p>このページはServisWorkerのキャッシュを使用しているため一度表示するとオフラインでも表示できます。</p>
     <object
       data="memo.txt"
       type="text/plain"
@@ -18,13 +17,39 @@
     ></object>
     <div id="nav">
       <ul>
-        <li><a href="html/html.html">HTML</a></li>
-        <li><a href="css/css.html">CSS</a></li>
-        <li><a href="JavaScript/JavaScript.html">JavaScript</a></li>
-        <li><a href="Java/Java.html">Java</a></li>
-        <li><a href="Python/Python.html">Python</a></li>
+        <li><a href="index.html">HOME（オフライン時は使用不可）</a></li>
       </ul>
     </div>
+      <h1>ファイル一覧</h1>
+  <ul id="file-list"></ul>
+
+  <script>
+    fetch('/api/list-files')  // ここにサーバー側のAPIのURLを指定
+      .then(response => response.json())
+      .then(files => {
+        const list = document.getElementById('file-list');
+        files.forEach(file => {
+          const item = document.createElement('li');
+          item.textContent = file;
+          list.appendChild(item);
+        });
+      });
+  </script>
+  <pre id="output">読み込み中...</pre>
+
+<script>
+  const fileURL = 'https://firebasestorage.googleapis.com/v0/b/my-website-2b713.firebasestorage.app/o/uploads%2F%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88.txt?alt=media&token=afddefd5-5c83-42b0-ac88-b8167d25918d';
+
+  fetch(fileURL)
+    .then(res => res.text())
+    .then(text => {
+      document.getElementById('output').textContent = text;
+    })
+    .catch(err => {
+      document.getElementById('output').textContent = '読み込みに失敗しました';
+      console.error(err);
+    });
+</script>
   </body>
   <script src="app.js"></script>
 </html>
