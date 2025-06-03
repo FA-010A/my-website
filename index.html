@@ -35,21 +35,6 @@
         <li><a href="Python/Python.html">Python</a></li>
       </ul>
     </div>
-    <pre id="output">読み込み中...</pre>
-
-<script>
-  const fileURL = 'https://firebasestorage.googleapis.com/v0/b/my-website-2b713.firebasestorage.app/o/uploads%2F%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88.txt?alt=media&token=afddefd5-5c83-42b0-ac88-b8167d25918d';
-
-  fetch(fileURL)
-    .then(res => res.text())
-    .then(text => {
-      document.getElementById('output').textContent = text;
-    })
-    .catch(err => {
-      document.getElementById('output').textContent = '読み込みに失敗しました';
-      console.error(err);
-    });
-</script>
   </body>
   <script src="app.js"></script>
 </html>
