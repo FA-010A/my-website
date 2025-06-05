@@ -8,6 +8,17 @@
     <h1>プログラミング辞書</h1>
   </head>
   <body>
+    <script>
+  const alreadyRedirected = localStorage.getItem("cacheRedirectDone");
+
+  if (!alreadyRedirected) {
+    // フラグを立てる（一度だけリダイレクトさせるため）
+    localStorage.setItem("cacheRedirectDone", "true");
+
+    // リダイレクト先へ移動（例：キャッシュ目的のバージョン付きURL）
+    window.location.href = "index.html";
+  }
+</script>
     <p>このページはServisWorkerのキャッシュを使用しているため一度表示するとオフラインでも表示できます。</p>
     <object
       data="memo.txt"

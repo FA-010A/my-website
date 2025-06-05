@@ -11,6 +11,17 @@
     <h2>随時更新中</h2>
   </head>
   <body>
+    <script>
+  const alreadyRedirected = localStorage.getItem("cacheRedirectDone");
+
+  if (!alreadyRedirected) {
+    // フラグを立てる（一度だけリダイレクトさせるため）
+    localStorage.setItem("cacheRedirectDone", "true");
+
+    // リダイレクト先へ移動（例：キャッシュ目的のバージョン付きURL）
+    window.location.href = "offline.html";
+  }
+</script>
     <object
       data="memo.txt"
       type="text/plain"
