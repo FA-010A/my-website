@@ -4,7 +4,6 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 calc(50% - 50vw) 30px;
     background-color: rgb(198, 160, 227);
 }
 
