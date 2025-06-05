@@ -4,8 +4,9 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 calc(50% - 50vw) 30px;
     background-color: rgb(198, 160, 227);
+    width: 80vw;
+    margin: 0 auto;
 }
 
 html{
@@ -13,6 +14,8 @@ html{
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 80vw;
+    margin: 0 auto;
 }
 p{
     display:inline-block;
@@ -20,13 +23,18 @@ p{
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 80vw;
+    margin: 0 auto;
 }
 object{
     background-color: rgb(255, 214, 137);
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 80vw;
+    margin: 0 auto;
 }
 ul{
     background-color: rgb(197, 240, 154);
+    margin: 0 auto;
 }
