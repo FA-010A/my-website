@@ -1,41 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/style.css">
-    <title>プログラミング辞書</title>
-    <h1>プログラミング辞書</h1>
-  </head>
-  <body>
-    <script>
-  const alreadyRedirected = localStorage.getItem("cacheRedirectDone");
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>オフラインモード</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <h1>オフラインモード</h1>
 
-  if (!alreadyRedirected) {
-    // フラグを立てる（一度だけリダイレクトさせるため）
-    localStorage.setItem("cacheRedirectDone", "true");
+  <p>現在、インターネットに接続されていません。</p>
+  <p>このページはキャッシュによりオフラインで表示されています。</p>
 
-    // リダイレクト先へ移動（例：キャッシュ目的のバージョン付きURL）
-    window.location.href = "index.html";
-  }
-</script>
-    <p>このページはServisWorkerのキャッシュを使用しているため一度表示するとオフラインでも表示できます。</p>
-    <object
-      data="memo.txt"
-      type="text/plain"
-      width="100%"
-      height="100%"
-    ></object>
-    <div id="nav">
-      <ul>
-        <li><a href="index.html">HOME（オフライン時は使用不可）</a></li>
-      </ul>
-    </div>
-      <h1>ファイル一覧</h1>
+  <object
+    data="memo.txt"
+    type="text/plain"
+    width="100%"
+    height="200px"
+  >メモファイルを表示できません。</object>
+
+  <div id="nav">
+    <ul>
+      <li><a href="index.html">HOME（オンライン時のみ）</a></li>
+    </ul>
+  </div>
+
+  <h2>ローカルファイル一覧（オフライン時は非表示の可能性あり）</h2>
   <ul id="file-list"></ul>
 
   <script>
-    fetch('/api/list-files')  // ここにサーバー側のAPIのURLを指定
+    // オフラインでも fetch が動く場合はファイル一覧を表示（失敗してもスルー）
+    fetch('/api/list-files')
       .then(response => response.json())
       .then(files => {
         const list = document.getElementById('file-list');
@@ -44,32 +39,12 @@
           item.textContent = file;
           list.appendChild(item);
         });
+      })
+      .catch(() => {
+        // 失敗しても何もしない（オフラインのため）
       });
   </script>
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
-    authDomain: "my-website-2b713.firebaseapp.com",
-    projectId: "my-website-2b713",
-    storageBucket: "my-website-2b713.firebasestorage.app",
-    messagingSenderId: "474696820051",
-    appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
-    measurementId: "G-52N4LS8E57"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-
-  </body>
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
+</body>
 </html>
