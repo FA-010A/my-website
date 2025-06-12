@@ -5,3 +5,14 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('SW registration failed:', err));
   });
 }
+import { loadFile } from "./fileLoader.js";
+
+window.addEventListener("DOMContentLoaded", async () => {
+  const fileUrl = await loadFile("docs/sample.pdf"); // Storage 上のパス
+  if (fileUrl) {
+    const preview = document.getElementById("preview");
+    preview.src = fileUrl;
+  } else {
+    alert("ファイルの読み込みに失敗しました");
+  }
+});
