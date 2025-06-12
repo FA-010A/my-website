@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" type="text/css" />
     <!-- manifest.json を読み込む -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json" />
     <title>プログラミング辞書</title>
     <h1>プログラミング辞書</h1>
     <h2>随時更新中</h2>
@@ -33,6 +33,24 @@
         <li><a href="Python/Python.html">Python</a></li>
       </ul>
     </div>
+    <h1>Firebase Storage 表示</h1>
+
+    <h2>プレビュー</h2>
+    <iframe
+      id="preview"
+      width="600"
+      height="400"
+      style="border: 1px solid #ccc"
+    ></iframe>
+
+    <h2>テキストファイル一覧</h2>
+    <ul id="file-list"></ul>
+
+    <h2>選択したテキスト内容</h2>
+    <pre
+      id="file-content"
+      style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px"
+    ></pre>
   </body>
   <script src="app.js"></script>
 </html>
