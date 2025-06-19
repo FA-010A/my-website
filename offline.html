@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firebase Storage 表示</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      li {
+        margin-bottom: 5px;
+      }
+      li:hover {
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Firebase Storage 表示</h1>
+
+    <h2>プレビュー</h2>
+    <iframe
+      id="preview"
+      width="600"
+      height="400"
+      style="border: 1px solid #ccc"
+    ></iframe>
+
+    <h2>テキストファイル一覧</h2>
+    <ul id="file-list"></ul>
+
+    <h2>選択したテキスト内容</h2>
+    <pre
+      id="file-content"
+      style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px"
+    ></pre>
+
+    <!-- Firebase JavaScript -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+      import {
+        getStorage,
+        ref,
+        listAll,
+        getDownloadURL,
+      } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-storage.js";
+
+      // ✅ あなたの Firebase 設定に置き換えてください
+      const firebaseConfig = {
+        apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
+        authDomain: "my-website-2b713.firebaseapp.com",
+        projectId: "my-website-2b713",
+        storageBucket: "my-website-2b713.firebasestorage.app",
+        messagingSenderId: "474696820051",
+        appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
+        measurementId: "G-52N4LS8E57",
+      };
+
+      // Firebase 初期化
+      const app = initializeApp(firebaseConfig);
+      const storage = getStorage(app);
+
+      // ✅ テキストファイルのフォルダパス（ルートの場合は ""）
+      const folderPath = "uploads/HTML/";
+      const listRef = ref(storage, folderPath);
+
+      const fileListElem = document.getElementById("file-list");
+      const fileContentElem = document.getElementById("file-content");
+      const previewFrame = document.getElementById("preview");
+
+      listAll(listRef)
+        .then((res) => {
+          if (res.items.length === 0) {
+            fileListElem.innerHTML =
+              "<li>ファイルが見つかりませんでした。</li>";
+            return;
+          }
+
+          res.items.forEach((itemRef) => {
+            const li = document.createElement("li");
+            li.textContent = itemRef.name;
+            li.style.cursor = "pointer";
+            li.style.color = "blue";
+            li.style.textDecoration = "underline";
+
+            li.onclick = () => {
+              getDownloadURL(itemRef)
+                .then((url) => {
+                  fetch(url)
+                    .then((res) => res.text())
+                    .then((text) => {
+                      fileContentElem.textContent = text;
+                      previewFrame.srcdoc = `<pre style="font-family: monospace; white-space: pre-wrap;">${text}</pre>`;
+                    });
+                })
+                .catch((error) => {
+                  console.error("URL取得エラー:", error);
+                  fileContentElem.textContent =
+                    "ファイルの読み込みに失敗しました。";
+                });
+            };
+
+            fileListElem.appendChild(li);
+          });
+        })
+        .catch((error) => {
+          console.error("ファイル一覧取得エラー:", error);
+          fileListElem.innerHTML =
+            "<li>ファイル一覧の取得に失敗しました。</li>";
+        });
+    </script>
+  </body>
+</html>
