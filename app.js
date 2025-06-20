@@ -1,4 +1,4 @@
-// main.js
+// app.js
 
 // Service Worker 登録
 if ('serviceWorker' in navigator) {
