@@ -1,3 +1,5 @@
+//sw.js
+
 // キャッシュ名の定義（バージョンを変えると新しいキャッシュとして扱われる）
 const CACHE_NAME = 'demo-cache-v2';
 
