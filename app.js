@@ -1,6 +1,6 @@
 // app.js
 
-// Service Worker 登録
+// Service Worker登録
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
@@ -9,35 +9,26 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Firebase 関連インポート
-import { loadFile } from "./fileLoader.js";
-import { listTxtFilesInDirectory } from "./listFiles.js";
-import { loadTextFile } from "./fileLoader.js";
+// ここからモジュールとしてimport可能にする場合
+// import { loadFile, loadTextFile } from './fileLoader.js';
+// import { listTxtFilesInDirectory } from './listFiles.js';
 
-// 画面描画
+// 画面描画（例として非モジュールで書くなら下記のように書く）
+// もしモジュールを使いたいなら、ちゃんとサーバー立ててimportすること
+
 window.addEventListener("DOMContentLoaded", async () => {
-  const fileUrl = await loadFile("uploads/");
-
-  // 画像・PDF等のプレビュー表示
-  if (fileUrl) {
-    const preview = document.getElementById("preview");
-    preview.src = fileUrl;
-  } else {
-    alert("ファイルの読み込みに失敗しました");
-  }
-
-  // 【⑤】テキストファイル一覧＋内容表示
+  // 例: ファイル一覧表示領域とファイル内容表示領域を取得
   const fileListContainer = document.getElementById("file-list");
   const contentDisplay = document.getElementById("file-content");
 
+  // ファイル一覧取得関数の呼び出し例（モジュール内のlistTxtFilesInDirectoryを使うならコメント解除）
+  /*
   try {
     const txtFiles = await listTxtFilesInDirectory("uploads/");
-
     if (txtFiles.length === 0) {
       fileListContainer.innerHTML = "<li>テキストファイルが見つかりません</li>";
       return;
     }
-
     txtFiles.forEach(file => {
       const li = document.createElement("li");
       const link = document.createElement("a");
@@ -52,9 +43,9 @@ window.addEventListener("DOMContentLoaded", async () => {
       li.appendChild(link);
       fileListContainer.appendChild(li);
     });
-
   } catch (err) {
     console.error("一覧取得エラー:", err);
     fileListContainer.innerHTML = "<li>一覧取得に失敗しました</li>";
   }
+  */
 });

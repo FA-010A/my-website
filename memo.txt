@@ -10,5 +10,9 @@
 ・オンライン時にファイルをローカルにダウンロードしてオフラインで閲覧できるようにするか？
 ・
 
-
+開発環境
+・GitHub
+・GitHub Pages
+・FireBase
+・Visual Studio Code
 
