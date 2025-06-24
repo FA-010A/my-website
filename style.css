@@ -34,11 +34,19 @@ object{
     width: 80vw;
     margin: 0 auto;
 }
-ul{
-    background-color: rgb(197, 240, 154);
-    margin: 0 auto;
+ul {
+  list-style: none; /* 丸印を消す */
+  padding-left: 0;  /* 左の余白も消す */
 }
+
+ul li {
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  
+}
+
 li{
-    background-color: rgb(154, 207, 240);
-    margin: 0 auto;
+    background-color:  rgb(154, 207, 240);
 }

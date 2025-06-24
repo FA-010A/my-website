@@ -1,136 +1,158 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>プログラミング辞書</title>
-  <link rel="stylesheet" href="style.css" type="text/css" />
-  <link rel="manifest" href="manifest.json" />
-</head>
-<body>
-  <h1>プログラミング辞書</h1>
-  <h2>随時更新中</h2>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>プログラミング辞書</title>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <h1>プログラミング辞書</h1>
+    <h2>随時更新中</h2>
 
-  <object data="memo.txt" type="text/plain" width="100%" height="100%"></object>
+    <object
+      data="memo.txt"
+      type="text/plain"
+      width="100%"
+      height="100%"
+    ></object>
 
-  <h2>注意事項</h2>
-  <object data="注意事項.txt" type="text/plain" width="100%" height="100%"></object>
+    <h2>注意事項</h2>
+    <object
+      data="注意事項.txt"
+      type="text/plain"
+      width="100%"
+      height="100%"
+    ></object>
 
-  <div id="nav">
-    <ul><li><a href="html/html.html">HTML</a></li></ul>
-    <ul><li><a href="css/css.html">CSS</a></li></ul>
-    <ul><li><a href="JavaScript/JavaScript.html">JavaScript</a></li></ul>
-    <ul><li><a href="Java/Java.html">Java</a></li></ul>
-    <ul><li><a href="Python/Python.html">Python</a></li></ul>
-  </div>
+    <div id="nav">
+  <h2>ナビゲーションメニュー</h2>
+  <ul>
+    <li><a href="html/html.html">HTML</a></li>
+    <li><a href="css/css.html">CSS</a></li>
+    <li><a href="JavaScript/JavaScript.html">JavaScript</a></li>
+    <li><a href="Java/Java.html">Java</a></li>
+    <li><a href="Python/Python.html">Python</a></li>
+  </ul>
+</div>
 
-  <h1>Firebase Storage 表示</h1>
-  <h2>テキストファイル一覧</h2>
-  <div>
-    <li>
-      HTML
-      <ul id="fileList-html"></ul>
-    </li>
-    <li>
-      CSS
-      <ul id="fileList-css"></ul>
-    </li>
-    <li>
-      JavaScript
-      <ul id="fileList-js"></ul>
-    </li>
-    <li>
-      Java
-      <ul id="fileList-java"></ul>
-    </li>
-    <li>
-      Python
-      <ul id="fileList-python"></ul>
-    </li>
-  </div>
+    <h1>Firebase Storage 表示</h1>
+    <h2>テキストファイル一覧</h2>
+    <div>
+      <li>
+        HTML
+        <ul id="fileList-html"></ul>
+      </li>
+      <li>
+        CSS
+        <ul id="fileList-css"></ul>
+      </li>
+      <li>
+        JavaScript
+        <ul id="fileList-js"></ul>
+      </li>
+      <li>
+        Java
+        <ul id="fileList-java"></ul>
+      </li>
+      <li>
+        Python
+        <ul id="fileList-python"></ul>
+      </li>
+    </div>
 
-  <h2>選択したテキスト内容</h2>
-  <pre id="file-content" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px"></pre>
+    <h2>選択したテキスト内容</h2>
+    <pre
+      id="file-content"
+      style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px"
+    ></pre>
 
-  <!-- Firebase モジュール版SDKをimport -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getStorage, ref, listAll, getDownloadURL, getBlob } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+    <!-- Firebase モジュール版SDKをimport -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+      import {
+        getStorage,
+        ref,
+        listAll,
+        getDownloadURL,
+        getBlob,
+      } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-    // Firebase設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
-      authDomain: "my-website-2b713.firebaseapp.com",
-      projectId: "my-website-2b713",
-      storageBucket: "my-website-2b713.firebasestorage.app",
-      messagingSenderId: "474696820051",
-      appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
-      measurementId: "G-52N4LS8E57",
-    };
+      // Firebase設定
+      const firebaseConfig = {
+        apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
+        authDomain: "my-website-2b713.firebaseapp.com",
+        projectId: "my-website-2b713",
+        storageBucket: "my-website-2b713.firebasestorage.app",
+        messagingSenderId: "474696820051",
+        appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
+        measurementId: "G-52N4LS8E57",
+      };
 
-    // Firebase初期化
-    const app = initializeApp(firebaseConfig);
-    const storage = getStorage(app);
+      // Firebase初期化
+      const app = initializeApp(firebaseConfig);
+      const storage = getStorage(app);
 
-    // 言語ごとのフォルダと対応するUL要素のid
-    const langs = [
-      { id: "fileList-html", folder: "uploads/HTML" },
-      { id: "fileList-css", folder: "uploads/CSS" },
-      { id: "fileList-js", folder: "uploads/JavaScript" },
-      { id: "fileList-java", folder: "uploads/Java" },
-      { id: "fileList-python", folder: "uploads/Python" },
-    ];
+      // 言語ごとのフォルダと対応するUL要素のid
+      const langs = [
+        { id: "fileList-html", folder: "uploads/HTML" },
+        { id: "fileList-css", folder: "uploads/CSS" },
+        { id: "fileList-js", folder: "uploads/JavaScript" },
+        { id: "fileList-java", folder: "uploads/Java" },
+        { id: "fileList-python", folder: "uploads/Python" },
+      ];
 
-    const fileContentElem = document.getElementById("file-content");
+      const fileContentElem = document.getElementById("file-content");
 
-    langs.forEach(({ id, folder }) => {
-      const listElement = document.getElementById(id);
-      listElement.textContent = ""; // 初期化
+      langs.forEach(({ id, folder }) => {
+        const listElement = document.getElementById(id);
+        listElement.textContent = ""; // 初期化
 
-      // フォルダ参照
-      const listRef = ref(storage, folder);
+        // フォルダ参照
+        const listRef = ref(storage, folder);
 
-      // ファイル一覧を取得
-      listAll(listRef)
-        .then(res => {
-          if (res.items.length === 0) {
-            listElement.textContent = "ファイルが見つかりません";
-            return;
-          }
+        // ファイル一覧を取得
+        listAll(listRef)
+          .then((res) => {
+            if (res.items.length === 0) {
+              listElement.textContent = "ファイルが見つかりません";
+              return;
+            }
 
-          res.items.forEach(itemRef => {
-            const a = document.createElement("a");
-            a.href = "#";
-            a.textContent = itemRef.name;
-            a.style.cursor = "pointer";
-            a.addEventListener("click", async (e) => {
-  e.preventDefault();
-  fileContentElem.textContent = "読み込み中...";
-  try {
-    const url = await getDownloadURL(itemRef);
+            res.items.forEach((itemRef) => {
+              const a = document.createElement("a");
+              a.href = "#";
+              a.textContent = itemRef.name;
+              a.style.cursor = "pointer";
+              a.addEventListener("click", async (e) => {
+                e.preventDefault();
+                fileContentElem.textContent = "読み込み中...";
+                try {
+                  const url = await getDownloadURL(itemRef);
 
-    // Service Workerのキャッシュを回避して取得
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) throw new Error("ファイル取得失敗");
-    const text = await response.text();
+                  // Service Workerのキャッシュを回避して取得
+                  const response = await fetch(url, { cache: "no-store" });
+                  if (!response.ok) throw new Error("ファイル取得失敗");
+                  const text = await response.text();
 
-    fileContentElem.textContent = text;
-  } catch (err) {
-    fileContentElem.textContent = "読み込みに失敗しました";
-    console.error(err);
-  }
-});
+                  fileContentElem.textContent = text;
+                } catch (err) {
+                  fileContentElem.textContent = "読み込みに失敗しました";
+                  console.error(err);
+                }
+              });
 
-            listElement.appendChild(a);
-            listElement.appendChild(document.createElement("br"));
+              listElement.appendChild(a);
+              listElement.appendChild(document.createElement("br"));
+            });
+          })
+          .catch((error) => {
+            listElement.textContent = "エラー: " + error.message;
+            console.error(error);
           });
-        })
-        .catch(error => {
-          listElement.textContent = "エラー: " + error.message;
-          console.error(error);
-        });
-    });
-  </script>
-  <script type="module" src="app.js"></script>
-</body>
+      });
+    </script>
+    <script type="module" src="app.js"></script>
+  </body>
 </html>
