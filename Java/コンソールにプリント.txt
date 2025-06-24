@@ -1,6 +1,0 @@
-文字出力後に改行
-System.out.println();
-
-文字出力
-System.out.print();
-

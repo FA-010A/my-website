@@ -1,5 +1,0 @@
-<script>
-'use strict';
-以下スクリプト自由記述
-</script>
-
