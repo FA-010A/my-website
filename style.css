@@ -1,12 +1,13 @@
 @charset "utf-8";
 
 h1 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgb(198, 160, 227);
-    width: 80vw;
-    margin: 0 auto;
+  color: #000000;
+  text-align: center;
+  padding: 0.25em;
+  border-top: solid 2px #39a0e5;
+  border-bottom: solid 2px #39a0e5;
+  background: -webkit-repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
+  background: repeating-linear-gradient(-45deg, #f0f8ff, #f0f8ff 3px,#e9f4ff 3px, #e9f4ff 7px);
 }
 
 html{
@@ -34,19 +35,29 @@ object{
     width: 80vw;
     margin: 0 auto;
 }
-ul {
-  list-style: none; /* 丸印を消す */
-  padding-left: 0;  /* 左の余白も消す */
+ul, ol {
+  padding: 0;
+  position: relative;
 }
 
-ul li {
-  padding: 8px 0;
-  border-bottom: 1px solid #ddd;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  
+ul li, ol li {
+  color: #2d8fdd;
+  border-left: solid 6px #2d8fdd;/*左側の線*/
+  background: #b0f3ff;/*背景色*/
+  margin-bottom: 3px;/*下のバーとの余白*/
+   line-height: 1.5;
+  padding: 0.5em;
+  list-style-type: none!important;/*ポチ消す*/
 }
 
-li{
-    background-color:  rgb(154, 207, 240);
+.box8 {
+    padding: 0.5em 1em;
+    margin: 2em 0;
+    color: #232323;
+    background: #fff8e8;
+    border-left: solid 10px #ffc06e;
+}
+.box8 p {
+    margin: 0; 
+    padding: 0;
 }
