@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="../style.css" type="text/css" />
+  <link rel="stylesheet" href="style.css" type="text/css" />
   <title>Javaページ</title>
-  <h1>プログラミング辞書</h1>
 </head>
+
 <body>
+  <h1>プログラミング辞書</h1>
   <h2>Javaのページです</h2>
+
   <div id="nav">
     <ul>
-      <li><a href="../index.html">HOME</a></li>
-      <li><a href="../html/html.html">HTML</a></li>
-      <li><a href="../css/css.html">CSS</a></li>
-      <li><a href="../JavaScript/JavaScript.html">JavaScript</a></li>
-      <li><a href="../Python/Python.html">Python</a></li>
+      <li><a href="index.html">HOME</a></li>
+      <li><a href="html.html">HTML</a></li>
+      <li><a href="css.html">CSS</a></li>
+      <li><a href="JavaScript.html">JavaScript</a></li>
+      <li><a href="Python.html">Python</a></li>
     </ul>
   </div>
 
@@ -55,12 +58,21 @@
     firebase.initializeApp(firebaseConfig);
     const storage = firebase.storage();
 
-    // ファイル選択からアップロード
+    // ファイル選択からアップロード（.txt以外をブロック）
     function uploadFile() {
       const fileInput = document.getElementById('fileInput');
       const file = fileInput.files[0];
       if (!file) {
         alert("ファイルを選択してください");
+        return;
+      }
+
+      const fileName = file.name.toLowerCase();
+      const isTxtExtension = fileName.endsWith(".txt");
+      const isTxtMimeType = file.type === "text/plain" || file.type === "";
+
+      if (!isTxtExtension || !isTxtMimeType) {
+        alert("テキストファイル（.txt）のみアップロードできます");
         return;
       }
 
@@ -96,7 +108,7 @@
       reader.readAsText(file, "UTF-8");
     }
 
-    // テキスト入力をファイル化してアップロード
+    // テキスト入力をファイルとしてアップロード
     function uploadTextAsFile() {
       const fileName = document.getElementById('textFileName').value.trim();
       const text = document.getElementById('textInput').value;
@@ -111,7 +123,7 @@
         return;
       }
       if (!fileName.endsWith('.txt')) {
-        alert('ファイル名は必ず「.txt」で終わるようにしてください');
+        alert('ファイル名は「.txt」で終わる必要があります');
         return;
       }
 
@@ -141,7 +153,7 @@
       );
     }
 
-    // ファイル一覧を読み込む
+    // ファイル一覧表示
     function loadFileList() {
       const fileListDiv = document.getElementById('fileList');
       fileListDiv.textContent = '読み込み中...';
@@ -175,4 +187,5 @@
     };
   </script>
 </body>
+
 </html>

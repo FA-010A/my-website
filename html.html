@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="../style.css" type="text/css" />
+  <link rel="stylesheet" href="style.css" type="text/css" />
   <title>html</title>
   <h1>プログラミング辞書</h1>
 </head>
+
 <body>
   <h2>HTMLのページです</h2>
   <div id="nav">
     <ul>
-      <li><a href="../index.html">HOME</a></li>
-      <li><a href="../css/css.html">CSS</a></li>
-      <li><a href="../JavaScript/JavaScript.html">JavaScript</a></li>
-      <li><a href="../Java/Java.html">Java</a></li>
-      <li><a href="../Python/Python.html">Python</a></li>
+      <li><a href="index.html">HOME</a></li>
+      <li><a href="css.html">CSS</a></li>
+      <li><a href="JavaScript.html">JavaScript</a></li>
+      <li><a href="Java.html">Java</a></li>
+      <li><a href="Python.html">Python</a></li>
     </ul>
   </div>
 
@@ -61,6 +63,12 @@
       const file = fileInput.files[0];
       if (!file) {
         alert("ファイルを選択してください");
+        return;
+      }
+
+      // ファイルの拡張子チェック（.txtのみ許可）
+      if (!file.name.toLowerCase().endsWith('.txt')) {
+        alert("アップロードできるのは.txtファイルのみです");
         return;
       }
 
@@ -176,4 +184,5 @@
     };
   </script>
 </body>
+
 </html>
