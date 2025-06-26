@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" type="text/css" />
   <title>JavaScriptページ</title>
-  <h1>プログラミング辞書</h1>
 </head>
 
 <body>
+  <h1>プログラミング辞書</h1>
   <h2>JavaScriptのページです</h2>
+
   <div id="nav">
     <ul>
       <li><a href="index.html">HOME</a></li>
@@ -66,6 +67,15 @@
         return;
       }
 
+      const fileName = file.name.toLowerCase();
+      const isTxtExtension = fileName.endsWith(".txt");
+      const isTxtMime = file.type === "text/plain" || file.type === "";
+
+      if (!isTxtExtension || !isTxtMime) {
+        alert("テキストファイル（.txt）のみアップロードできます");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = function (e) {
         const text = e.target.result;
@@ -113,7 +123,7 @@
         return;
       }
       if (!fileName.endsWith('.txt')) {
-        alert('ファイル名は必ず「.txt」で終わるようにしてください');
+        alert('ファイル名は必ず「.txt」で終わる必要があります');
         return;
       }
 

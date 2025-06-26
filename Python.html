@@ -66,6 +66,12 @@
         return;
       }
 
+      // .txtファイルのみ許可
+      if (!file.name.toLowerCase().endsWith('.txt')) {
+        alert("アップロードできるのは.txtファイルのみです");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = function (e) {
         const text = e.target.result;
