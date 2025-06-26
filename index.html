@@ -86,12 +86,10 @@
 
     langs.forEach(({ id, folder }) => {
       const listElement = document.getElementById(id);
-      listElement.textContent = ""; // 初期化
+      listElement.textContent = "";
 
-      // フォルダ参照
       const listRef = ref(storage, folder);
 
-      // ファイル一覧を取得
       listAll(listRef)
         .then((res) => {
           if (res.items.length === 0) {
@@ -99,31 +97,9 @@
             return;
           }
 
-          res.items.forEach((itemRef) => {
-            const a = document.createElement("a");
-            a.href = "#";
-            a.textContent = itemRef.name;
-            a.style.cursor = "pointer";
-            a.addEventListener("click", async (e) => {
-              e.preventDefault();
-              fileContentElem.textContent = "読み込み中...";
-              try {
-                const url = await getDownloadURL(itemRef);
-
-                // Service Workerのキャッシュを回避して取得
-                const response = await fetch(url, { cache: "no-store" });
-                if (!response.ok) throw new Error("ファイル取得失敗");
-                const text = await response.text();
-
-                fileContentElem.textContent = text;
-              } catch (err) {
-                fileContentElem.textContent = "読み込みに失敗しました";
-                console.error(err);
-              }
-            });
-
-            listElement.appendChild(a);
-            listElement.appendChild(document.createElement("br"));
+          res.items.forEach(async (itemRef) => {
+            await cacheFileContent(itemRef); // ← まずキャッシュ
+            displayFileList(itemRef, listElement); // ← それからクリックリンク生成
           });
         })
         .catch((error) => {
