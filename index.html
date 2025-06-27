@@ -121,10 +121,20 @@
   </script>
   <script type="module" src="app.js"></script>
   <footer>
-    <a href="#" class="btn-real-dent">
+    <a href="#" class="btn-real-dent" id="scroll-top">
       <i class="fa fa-home"></i>
     </a>
   </footer>
+  <script>
+    // ページ上部へスムーズにスクロール
+    document.getElementById("scroll-top").addEventListener("click", function (e) {
+      e.preventDefault(); // ページの再読み込みを防ぐ
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    });
+  </script>
 </body>
 
 
