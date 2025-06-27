@@ -1,12 +1,12 @@
 {
   // アプリの正式名称（インストール時に表示される）
-  "name": "My Web App",
+  "name": "プログラミング辞書",
 
   // アプリの短縮名（ホーム画面やスプラッシュ画面などに使用）
   "short_name": "WebApp",
 
   // アプリの開始URL（通常は index.html）
-  "start_url": "./index.html",
+  "start_url": "index.html",
 
   // 表示モード（"standalone" はアプリのようにブラウザUIなしで表示）
   "display": "standalone",
@@ -17,10 +17,10 @@
   // ブラウザのUIに使われるテーマ色（ツールバーなど）
   "theme_color": "#333333",
 
-  // アプリアイコン（インストールやスプラッシュ画面で使用）
+  // アプリアイコン
   "icons": [
     {
-      // 小アイコン（Android などで通知用にも使われる）
+      // 小アイコン
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
