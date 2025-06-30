@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>プログラミング辞書</title>
+
+    <!-- 外部CSSスタイルを読み込み -->
     <link rel="stylesheet" href="style.css" type="text/css" />
+
+    <!-- PWA対応のマニフェスト -->
     <link rel="manifest" href="manifest.json" />
   </head>
 
@@ -12,6 +16,7 @@
     <h1>プログラミング辞書</h1>
     <h2>随時更新中</h2>
 
+    <!-- memo.txtファイルの中身を表示 -->
     <object
       class="box8"
       data="memo.txt"
@@ -20,6 +25,7 @@
       height="100%"
     ></object>
 
+    <!-- 注意事項のテキストファイル表示 -->
     <h2>注意事項</h2>
     <object
       class="box8"
@@ -29,6 +35,7 @@
       height="100%"
     ></object>
 
+    <!-- ナビゲーションメニュー -->
     <div id="nav">
       <h2>ナビゲーションメニュー</h2>
       <ul>
@@ -40,38 +47,49 @@
       </ul>
     </div>
 
+    <!-- Firebaseストレージからのファイル表示セクション -->
     <h1>Firebase Storage 表示</h1>
     <h2>選択したテキスト内容</h2>
+
+    <!-- ファイルの中身を表示する領域 -->
     <div class="box8">
       <pre
         id="file-content"
         style="font-size: 18px;"
       >選択したファイルの内容が表示されます。</pre>
     </div>
+
+    <!-- 各言語フォルダごとのファイル一覧 -->
     <h2>テキストファイル一覧</h2>
+
     <div class="box8">
       <h3>HTML</h3>
       <ul id="fileList-html"></ul>
     </div>
+
     <div class="box8">
       <h3>CSS</h3>
       <ul id="fileList-css"></ul>
     </div>
+
     <div class="box8">
       <h3>JavaScript</h3>
       <ul id="fileList-js"></ul>
     </div>
+
     <div class="box8">
       <h3>Java</h3>
       <ul id="fileList-java"></ul>
     </div>
+
     <div class="box8">
       <h3>Python</h3>
       <ul id="fileList-python"></ul>
     </div>
 
-    <!-- Firebase モジュール版SDKをimport -->
+    <!-- Firebase JavaScript SDK をモジュール形式で読み込み -->
     <script type="module">
+      // Firebase SDK（アプリ、ストレージ）をインポート
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
       import {
         getStorage,
@@ -81,22 +99,22 @@
         getBlob,
       } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-      // Firebase設定
+      // Firebaseプロジェクトの設定（セキュリティルールに注意）
       const firebaseConfig = {
         apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
         authDomain: "my-website-2b713.firebaseapp.com",
         projectId: "my-website-2b713",
-        storageBucket: "my-website-2b713.firebasestorage.app",
+        storageBucket: "my-website-2b713.firebasestorage.app", // 修正：正しくは .appspot.com
         messagingSenderId: "474696820051",
         appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
         measurementId: "G-52N4LS8E57",
       };
 
-      // Firebase初期化
+      // Firebase アプリとストレージを初期化
       const app = initializeApp(firebaseConfig);
       const storage = getStorage(app);
 
-      // 言語ごとのフォルダと対応するUL要素のid
+      // 各言語ごとのストレージパスとHTML要素の対応表
       const langs = [
         { id: "fileList-html", folder: "uploads/HTML" },
         { id: "fileList-css", folder: "uploads/CSS" },
@@ -107,12 +125,14 @@
 
       const fileContentElem = document.getElementById("file-content");
 
+      // 各フォルダごとに処理（ファイル一覧の取得と表示）
       langs.forEach(({ id, folder }) => {
         const listElement = document.getElementById(id);
         listElement.textContent = "";
 
-        const listRef = ref(storage, folder);
+        const listRef = ref(storage, folder); // ストレージ参照を作成
 
+        // フォルダ内の全ファイルを取得
         listAll(listRef)
           .then((res) => {
             if (res.items.length === 0) {
@@ -120,9 +140,10 @@
               return;
             }
 
+            // 各ファイルに対してリンク作成とキャッシュ
             res.items.forEach(async (itemRef) => {
-              await cacheFileContent(itemRef); // ← まずキャッシュ
-              displayFileList(itemRef, listElement); // ← それからクリックリンク生成
+              await cacheFileContent(itemRef); // 中身を事前取得してキャッシュ
+              displayFileList(itemRef, listElement); // リストにクリック可能リンク追加
             });
           })
           .catch((error) => {
@@ -130,7 +151,13 @@
             console.error(error);
           });
       });
+
+      // 🔻 別ファイル app.js に定義されている関数が必要：
+      // - cacheFileContent(itemRef)
+      // - displayFileList(itemRef, listElement)
     </script>
+
+    <!-- 外部のロジック（関数定義など）をモジュールとして読み込み -->
     <script type="module" src="app.js"></script>
   </body>
 </html>

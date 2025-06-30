@@ -1,3 +1,5 @@
+//app.js
+
 // Service Worker登録
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
