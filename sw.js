@@ -1,10 +1,7 @@
 //sw.js
 
 // キャッシュ名の定義（バージョンを変えると新しいキャッシュとして扱われる）
-const CACHE_NAME = 'demo-cache-v2';
-
-// オフライン時に表示するHTMLのURL
-const OFFLINE_URL = 'offline.html';
+const CACHE_NAME = 'cache';
 
 // Firebase Storage のキャッシュ対象ファイル（URLエンコード済み）
 const FIREBASE_FILE_URL = 'https://firebasestorage.googleapis.com/v0/b/my-website-2b713.firebasestorage.app/o/uploads%2F%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88.txt?alt=media&token=afddefd5-5c83-42b0-ac88-b8167d25918d';
@@ -16,7 +13,6 @@ self.addEventListener('install', event => {
       const urlsToCache = [
         '/',                // ルート
         '/index.html',      // トップページ
-        '/offline.html',    // オフライン用ページ
         '/app.js',          // アプリJS
         '/style.css',       // スタイルCSS
         FIREBASE_FILE_URL   // Firebase上のテキストファイル
