@@ -41,9 +41,9 @@ ul, ol {
 }
 
 ul li, ol li {
-  color: #2d8fdd;
-  border-left: solid 6px #99d1ff;/*左側の線*/
-  background: #bbffdb;/*背景色*/
+  color: #1e88e5;
+  border-left: solid 6px #1e88e5;/*左側の線*/
+  background: #e3f2fd;/*背景色*/
   margin-bottom: 3px;/*下のバーとの余白*/
   line-height: 1.5;
   padding: 0.5em;
