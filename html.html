@@ -1,204 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="style.css" type="text/css" />
-    <title>html</title>
-  </head>
 
-  <body>
-    <h1>プログラミング辞書</h1>
-    <h2>HTMLのページです</h2>
-    <div id="nav">
-      <ul>
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="css.html">CSS</a></li>
-        <li><a href="JavaScript.html">JavaScript</a></li>
-        <li><a href="Java.html">Java</a></li>
-        <li><a href="Python.html">Python</a></li>
-      </ul>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <title>html</title>
+</head>
 
-    <!-- ファイル選択アップロード -->
-    <input type="file" id="fileInput" accept=".txt" />
-    <button onclick="uploadFile()">アップロード</button>
-
-    <hr />
-
-    <!-- 直接テキスト入力してアップロード -->
-    <h3>テキストを直接入力してアップロード</h3>
-    <input
-      type="text"
-      id="textFileName"
-      placeholder="ファイル名を入力（例：sample.txt）"
-    />
-    <br />
-    <textarea
-      id="textInput"
-      rows="10"
-      cols="50"
-      placeholder="ここにテキストを入力してください"
-    ></textarea>
-    <br />
-    <button onclick="uploadTextAsFile()">テキストをアップロード</button>
-    <p id="textUploadProgress"></p>
-    
-    
-
-    <h1>アップロード済ファイル一覧</h1>
-    <h2>選択したテキスト内容</h2>
-  <div class="box8">
-    <pre id="file-content" style="white-space: pre-wrap; padding: 10px; font-size: 18px;max-height: 500px;
-        overflow-y: auto;">選択したファイルの内容が表示されます。</pre>
+<body>
+  <h1>プログラミング辞書</h1>
+  <h2>HTMLのページです</h2>
+  <div id="nav">
+    <ul>
+      <li><a href="index.html">HOME</a></li>
+      <li><a href="css.html">CSS</a></li>
+      <li><a href="JavaScript.html">JavaScript</a></li>
+      <li><a href="Java.html">Java</a></li>
+      <li><a href="Python.html">Python</a></li>
+    </ul>
   </div>
 
-    <div class="box8">
-      <h3>HTML</h3>
-      <ul id="fileList-html"></ul>
-    </div>
+  <!-- ファイル選択アップロード -->
+  <input type="file" id="fileInput" accept=".txt" />
+  <button onclick="uploadFile()">アップロード</button>
 
-    <!-- Firebase SDK -->
-    <script type="module" src="app.js">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-      import {
-        getStorage,
-        ref,
-        listAll,
-        getDownloadURL,
-        getBlob,
-      } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+  <hr />
 
-      // Firebase設定（そのままでOK）
-      const firebaseConfig = {
-        apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
-        authDomain: "my-website-2b713.firebaseapp.com",
-        projectId: "my-website-2b713",
-        storageBucket: "my-website-2b713.firebasestorage.app",
-        messagingSenderId: "474696820051",
-        appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
-        measurementId: "G-52N4LS8E57",
-      };
-      const app = initializeApp(firebaseConfig);
-      const storage = getStorage(app);
+  <!-- 直接テキスト入力してアップロード -->
+  <h3>テキストを直接入力してアップロード</h3>
+  <input type="text" id="textFileName" placeholder="ファイル名を入力（例：sample.txt）" />
+  <br />
+  <textarea id="textInput" rows="10" cols="50" placeholder="ここにテキストを入力してください"></textarea>
+  <br />
+  <button onclick="uploadTextAsFile()">テキストをアップロード</button>
+  <p id="textUploadProgress"></p>
 
-      // ファイル選択からアップロード
-      function uploadFile() {
-        const fileInput = document.getElementById("fileInput");
-        const file = fileInput.files[0];
-        if (!file) {
-          alert("ファイルを選択してください");
-          return;
-        }
+  <h1>アップロード済ファイル一覧</h1>
+  <h2>選択したテキスト内容</h2>
+  <div class="box8">
+    <pre id="file-content"
+      style="white-space: pre-wrap; padding: 10px; font-size: 18px; max-height: 500px; overflow-y: auto;">
+選択したファイルの内容が表示されます。
+      </pre>
+  </div>
 
-        // ファイルの拡張子チェック（.txtのみ許可）
-        if (!file.name.toLowerCase().endsWith(".txt")) {
-          alert("アップロードできるのは.txtファイルのみです");
-          return;
-        }
+  <div class="box8">
+    <h3>HTML</h3>
+    <ul id="fileList-html"></ul>
+  </div>
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const text = e.target.result;
-          const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getStorage,
+      ref,
+      listAll,
+      getDownloadURL,
+      getBlob,
+      uploadBytesResumable,
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-          const ref = storage.ref("uploads/HTML/" + file.name);
-          const uploadTask = ref.put(blob);
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
+      authDomain: "my-website-2b713.firebaseapp.com",
+      projectId: "my-website-2b713",
+      storageBucket: "my-website-2b713.firebasestorage.app",
+      messagingSenderId: "474696820051",
+      appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
+      measurementId: "G-52N4LS8E57",
+    };
 
-          uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-              const progress =
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              console.log("進捗:", progress.toFixed(2) + "%");
-            },
-            (error) => {
-              alert("エラー: " + error.message);
-            },
-            () => {
-              uploadTask.snapshot.ref.getDownloadURL().then((url) => {
-                alert("アップロード成功！");
-                loadFileList(); // アップロード後に一覧更新
-              });
-            }
-          );
-        };
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
 
-        reader.onerror = function () {
-          alert("ファイルの読み込みに失敗しました");
-        };
-
-        reader.readAsText(file, "UTF-8");
+    function uploadFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("ファイルを選択してください");
+        return;
       }
 
-      // テキスト入力をファイル化してアップロード
-      function uploadTextAsFile() {
-        const fileName = document.getElementById("textFileName").value.trim();
-        const text = document.getElementById("textInput").value;
-        const progressElem = document.getElementById("textUploadProgress");
+      if (!file.name.toLowerCase().endsWith(".txt")) {
+        alert("アップロードできるのは.txtファイルのみです");
+        return;
+      }
 
-        if (!fileName) {
-          alert("ファイル名を入力してください");
-          return;
-        }
-        if (!text) {
-          alert("テキストを入力してください");
-          return;
-        }
-        if (!fileName.endsWith(".txt")) {
-          alert("ファイル名は必ず「.txt」で終わるようにしてください");
-          return;
-        }
-
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const text = e.target.result;
         const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-        const ref = storage.ref("uploads/HTML/" + fileName);
-
-        const uploadTask = ref.put(blob);
-
-        progressElem.textContent = "アップロード中... 0%";
+        const storageRef = ref(storage, "uploads/HTML/" + file.name);
+        const uploadTask = uploadBytesResumable(storageRef, blob);
 
         uploadTask.on(
           "state_changed",
           (snapshot) => {
             const progress =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            progressElem.textContent = `アップロード中... ${progress.toFixed(
-              2
-            )}%`;
+            console.log("進捗:", progress.toFixed(2) + "%");
           },
           (error) => {
-            alert("アップロードエラー: " + error.message);
-            progressElem.textContent = "";
+            alert("エラー: " + error.message);
           },
           () => {
-            uploadTask.snapshot.ref.getDownloadURL().then((url) => {
-              alert("テキストアップロード成功！");
-              progressElem.textContent = "";
-              loadFileList(); // アップロード後に一覧更新
+            getDownloadURL(uploadTask.snapshot.ref).then(() => {
+              alert("アップロード成功！");
+              loadFileList();
             });
           }
         );
+      };
+
+      reader.onerror = function () {
+        alert("ファイルの読み込みに失敗しました");
+      };
+
+      reader.readAsText(file, "UTF-8");
+    }
+    window.uploadFile = uploadFile;
+
+    function uploadTextAsFile() {
+      const fileName = document.getElementById("textFileName").value.trim();
+      const text = document.getElementById("textInput").value;
+      const progressElem = document.getElementById("textUploadProgress");
+
+      if (!fileName) {
+        alert("ファイル名を入力してください");
+        return;
+      }
+      if (!text) {
+        alert("テキストを入力してください");
+        return;
+      }
+      if (!fileName.endsWith(".txt")) {
+        alert("ファイル名は必ず「.txt」で終わるようにしてください");
+        return;
       }
 
-      // Firebase Storageのファイル一覧を表示
-      const langs = [
-        { id: "fileList-html", folder: "uploads/HTML" },
-        { id: "fileList-css", folder: "uploads/CSS" },
-        { id: "fileList-js", folder: "uploads/JavaScript" },
-        { id: "fileList-java", folder: "uploads/Java" },
-        { id: "fileList-python", folder: "uploads/Python" },
-      ];
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const storageRef = ref(storage, "uploads/HTML/" + fileName);
+      const uploadTask = uploadBytesResumable(storageRef, blob);
 
-      const fileContentElem = document.getElementById("file-content");
+      progressElem.textContent = "アップロード中... 0%";
 
-      // 各フォルダごとに処理（ファイル一覧の取得と表示）
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          progressElem.textContent = `アップロード中... ${progress.toFixed(2)}%`;
+        },
+        (error) => {
+          alert("アップロードエラー: " + error.message);
+          progressElem.textContent = "";
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then(() => {
+            alert("テキストアップロード成功！");
+            progressElem.textContent = "";
+            loadFileList();
+          });
+        }
+      );
+    }
+    window.uploadTextAsFile = uploadTextAsFile;
+
+    const langs = [
+      { id: "fileList-html", folder: "uploads/HTML" },
+      { id: "fileList-css", folder: "uploads/CSS" },
+      { id: "fileList-js", folder: "uploads/JavaScript" },
+      { id: "fileList-java", folder: "uploads/Java" },
+      { id: "fileList-python", folder: "uploads/Python" },
+    ];
+
+    const fileContentElem = document.getElementById("file-content");
+
+    async function cacheFileContent(itemRef) {
+      const blob = await getBlob(itemRef);
+      const text = await blob.text();
+      itemRef.cachedText = text;
+    }
+
+    function displayFileList(itemRef, listElement) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#";
+      a.textContent = itemRef.name;
+      a.addEventListener("click", () => {
+        fileContentElem.textContent = itemRef.cachedText || "読み込み中...";
+      });
+      li.appendChild(a);
+      listElement.appendChild(li);
+    }
+
+    function loadFileList() {
       langs.forEach(({ id, folder }) => {
         const listElement = document.getElementById(id);
+        if (!listElement) return;
         listElement.textContent = "";
 
-        const listRef = ref(storage, folder); // ストレージ参照を作成
-
-        // フォルダ内の全ファイルを取得
+        const listRef = ref(storage, folder);
         listAll(listRef)
           .then((res) => {
             if (res.items.length === 0) {
@@ -206,10 +210,9 @@
               return;
             }
 
-            // 各ファイルに対してリンク作成とキャッシュ
             res.items.forEach(async (itemRef) => {
-              await cacheFileContent(itemRef); // 中身を事前取得してキャッシュ
-              displayFileList(itemRef, listElement); // リストにクリック可能リンク追加
+              await cacheFileContent(itemRef);
+              displayFileList(itemRef, listElement);
             });
           })
           .catch((error) => {
@@ -217,6 +220,10 @@
             console.error(error);
           });
       });
-    </script>
-  </body>
+    }
+
+    loadFileList();
+  </script>
+</body>
+
 </html>
