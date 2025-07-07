@@ -111,7 +111,7 @@
           };
         } else {
           // 開発環境用: 外部設定ファイルを使用
-          const response = await fetch('/firebase-config.json');
+          const response = await fetch('./firebase-config.json');
           if (response.ok) {
             firebaseConfig = await response.json();
           } else {
