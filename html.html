@@ -22,6 +22,11 @@
     </ul>
   </div>
 
+  <!-- 初期化状態表示 -->
+  <div id="initialization-status">
+    <p>Firebase初期化中...</p>
+  </div>
+
   <!-- ファイル選択アップロード -->
   <input type="file" id="fileInput" accept=".txt" />
   <button onclick="uploadFile()">アップロード</button>
@@ -63,20 +68,62 @@
       uploadBytesResumable,
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis",
-      authDomain: "my-website-2b713.firebaseapp.com",
-      projectId: "my-website-2b713",
-      storageBucket: "my-website-2b713.firebasestorage.app",
-      messagingSenderId: "474696820051",
-      appId: "1:474696820051:web:7cba8563bb4b025af7eda6",
-      measurementId: "G-52N4LS8E57",
-    };
+    // Firebase設定を安全に読み込む
+    let firebaseConfig = null;
+    let storage = null;
 
-    const app = initializeApp(firebaseConfig);
-    const storage = getStorage(app);
+    // 初期化状態を更新
+    function updateInitializationStatus(message, isComplete = false) {
+      const statusElement = document.getElementById('initialization-status');
+      if (statusElement) {
+        statusElement.innerHTML = `<p>${message}</p>`;
+        if (isComplete) {
+          setTimeout(() => {
+            statusElement.style.display = 'none';
+          }, 2000);
+        }
+      }
+    }
+
+    // Firebase設定を読み込む
+    async function loadFirebaseConfig() {
+      try {
+        const response = await fetch('./firebase-config.json');
+        if (!response.ok) {
+          throw new Error('設定ファイルが見つかりません');
+        }
+        firebaseConfig = await response.json();
+        console.log('Firebase設定読み込み完了');
+      } catch (error) {
+        console.error('Firebase設定の読み込みに失敗:', error);
+        // フォールバック設定
+        firebaseConfig = {
+          projectId: "my-website-2b713",
+          storageBucket: "my-website-2b713.firebasestorage.app",
+          apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis"
+        };
+      }
+    }
+
+    // Firebase初期化
+    async function initializeFirebase() {
+      await loadFirebaseConfig();
+      
+      if (!firebaseConfig) {
+        throw new Error('Firebase設定が読み込めませんでした');
+      }
+
+      const app = initializeApp(firebaseConfig);
+      storage = getStorage(app);
+      console.log('Firebase初期化完了');
+    }
 
     function uploadFile() {
+      if (!storage) {
+        alert('Firebase初期化中です。少々お待ちください。');
+        return;
+      }
+
       const fileInput = document.getElementById("fileInput");
       const file = fileInput.files[0];
       if (!file) {
@@ -124,6 +171,11 @@
     window.uploadFile = uploadFile;
 
     function uploadTextAsFile() {
+      if (!storage) {
+        alert('Firebase初期化中です。少々お待ちください。');
+        return;
+      }
+
       const fileName = document.getElementById("textFileName").value.trim();
       const text = document.getElementById("textInput").value;
       const progressElem = document.getElementById("textUploadProgress");
@@ -162,6 +214,8 @@
           getDownloadURL(uploadTask.snapshot.ref).then(() => {
             alert("テキストアップロード成功！");
             progressElem.textContent = "";
+            document.getElementById("textInput").value = "";
+            document.getElementById("textFileName").value = "";
             loadFileList();
           });
         }
@@ -180,9 +234,14 @@
     const fileContentElem = document.getElementById("file-content");
 
     async function cacheFileContent(itemRef) {
-      const blob = await getBlob(itemRef);
-      const text = await blob.text();
-      itemRef.cachedText = text;
+      try {
+        const blob = await getBlob(itemRef);
+        const text = await blob.text();
+        itemRef.cachedText = text;
+      } catch (error) {
+        console.error(`ファイル読み込みエラー (${itemRef.name}):`, error);
+        itemRef.cachedText = 'ファイルの読み込みに失敗しました';
+      }
     }
 
     function displayFileList(itemRef, listElement) {
@@ -190,7 +249,8 @@
       const a = document.createElement("a");
       a.href = "#";
       a.textContent = itemRef.name;
-      a.addEventListener("click", () => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
         fileContentElem.textContent = itemRef.cachedText || "読み込み中...";
       });
       li.appendChild(a);
@@ -198,18 +258,28 @@
     }
 
     function loadFileList() {
+      if (!storage) {
+        console.warn('Storage not initialized yet');
+        return;
+      }
+
       langs.forEach(({ id, folder }) => {
         const listElement = document.getElementById(id);
         if (!listElement) return;
-        listElement.textContent = "";
+        listElement.innerHTML = "読み込み中...";
 
         const listRef = ref(storage, folder);
         listAll(listRef)
           .then((res) => {
+            listElement.innerHTML = "";
+            
             if (res.items.length === 0) {
-              listElement.textContent = "ファイルが見つかりません";
+              listElement.innerHTML = "<li>ファイルが見つかりません</li>";
               return;
             }
+
+            // ファイル名でソート
+            res.items.sort((a, b) => a.name.localeCompare(b.name));
 
             res.items.forEach(async (itemRef) => {
               await cacheFileContent(itemRef);
@@ -217,13 +287,33 @@
             });
           })
           .catch((error) => {
-            listElement.textContent = "エラー: " + error.message;
+            listElement.innerHTML = `<li>エラー: ${error.message}</li>`;
             console.error(error);
           });
       });
     }
 
-    loadFileList();
+    // メイン処理
+    async function main() {
+      try {
+        updateInitializationStatus('Firebase初期化中...');
+        
+        await initializeFirebase();
+        
+        updateInitializationStatus('ファイル一覧を読み込み中...');
+        
+        loadFileList();
+        
+        updateInitializationStatus('初期化完了！', true);
+        
+      } catch (error) {
+        console.error('アプリケーション初期化エラー:', error);
+        updateInitializationStatus(`初期化エラー: ${error.message}`);
+      }
+    }
+
+    // アプリケーション開始
+    main();
   </script>
 </body>
 
