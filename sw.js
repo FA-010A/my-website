@@ -2,6 +2,7 @@
 
 // キャッシュ名の定義（バージョンを変えると新しいキャッシュとして扱われる）
 const CACHE_NAME = 'cache';
+const OFFLINE_URL = '/offline.html'; // オフライン時の代替ページ
 
 // Firebase Storage のキャッシュ対象ファイル（URLエンコード済み）
 const FIREBASE_FILE_URL = 'https://firebasestorage.googleapis.com/v0/b/my-website-2b713.firebasestorage.app/o/uploads%2F%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%97%E3%83%88.txt?alt=media&token=afddefd5-5c83-42b0-ac88-b8167d25918d';
@@ -55,47 +56,82 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
+// stale-while-revalidate戦略の実装
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+
+  // ネットワークから最新版を取得する Promise
+  const networkPromise = fetch(request).then(async networkResponse => {
+    // レスポンスが正常な場合のみキャッシュを更新
+    if (networkResponse && networkResponse.status === 200) {
+      try {
+        await cache.put(request, networkResponse.clone());
+        console.log('[ServiceWorker] Cache updated:', request.url);
+      } catch (err) {
+        console.warn('[ServiceWorker] Cache put failed:', err);
+      }
+    }
+    return networkResponse;
+  }).catch(error => {
+    console.warn('[ServiceWorker] Network fetch failed:', error);
+    return null;
+  });
+
+  // キャッシュがある場合は即座に返し、バックグラウンドで更新
+  if (cachedResponse) {
+    // バックグラウンドで更新を実行（結果を待たない）
+    networkPromise.catch(() => {}); // エラーハンドリング済み
+    return cachedResponse;
+  }
+
+  // キャッシュがない場合はネットワークの結果を待つ
+  const networkResponse = await networkPromise;
+  if (networkResponse) {
+    return networkResponse;
+  }
+
+  // ネットワークも失敗した場合のフォールバック
+  return new Response('', { status: 404 });
+}
+
 // fetchイベント：全てのリクエストに対して発火し、キャッシュの使用可否を判断
 self.addEventListener('fetch', event => {
   const requestURL = new URL(event.request.url);
 
-  // Firebase Storage からのファイルはキャッシュ優先
+  // Firebase Storage からのファイルはstale-while-revalidate戦略を使用
   if (requestURL.hostname.includes('firebasestorage.googleapis.com')) {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached; // キャッシュがあれば返す
+    event.respondWith(staleWhileRevalidate(event.request));
+    return;
+  }
 
-        // なければネットワークから取得してキャッシュに保存
-        return fetch(event.request).then(networkResponse => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone()).catch(err => {
-              console.warn('[ServiceWorker] Cache put failed:', err);
-            });
-            return networkResponse;
-          });
-        }).catch(() => caches.match(OFFLINE_URL)); // ネットワークも失敗したらoffline.html
+  // HTML ナビゲーションの要求（リンククリックやURL直打ち）
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      staleWhileRevalidate(event.request).then(response => {
+        // 404やその他のエラーの場合はオフラインページを表示
+        if (!response || response.status === 404) {
+          return caches.match(OFFLINE_URL) || new Response('オフラインです', { status: 503 });
+        }
+        return response;
       })
     );
     return;
   }
 
-  // HTML ナビゲーションの要求（リンククリックやURL直打ち） → オフラインなら offline.html を表示
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(OFFLINE_URL))
-    );
-    return;
-  }
-
-  // その他リソース（CSS, JS, 画像など）はキャッシュ優先、失敗時はリソースタイプごとの代替案を表示
+  // その他リソース（CSS, JS, 画像など）
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
+    staleWhileRevalidate(event.request).then(response => {
+      if (response && response.status === 200) {
+        return response;
       }
 
-      return fetch(event.request).catch(() => {
-        // キャッシュにもなく、ネットワークも失敗 → 種別ごとに対応
+      // キャッシュにもなく、ネットワークも失敗 → 種別ごとに対応
+      return caches.match(event.request).then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
         switch (event.request.destination) {
           case 'style':
             return caches.match('/style.css'); // CSSの代替
@@ -115,4 +151,36 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(message)
   );
+});
+
+// メッセージイベント：メインスレッドからの手動更新要求に対応
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'FORCE_UPDATE') {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then(cache => {
+        // 指定されたURLまたは全てのキャッシュを強制更新
+        const urlsToUpdate = event.data.urls || [
+          '/',
+          '/index.html',
+          '/app.js',
+          '/style.css',
+          FIREBASE_FILE_URL
+        ];
+
+        return Promise.allSettled(
+          urlsToUpdate.map(async url => {
+            try {
+              const response = await fetch(url);
+              if (response.ok) {
+                await cache.put(url, response);
+                console.log('[ServiceWorker] Force updated:', url);
+              }
+            } catch (err) {
+              console.warn('[ServiceWorker] Force update failed:', url, err);
+            }
+          })
+        );
+      })
+    );
+  }
 });
