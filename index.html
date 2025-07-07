@@ -8,21 +8,34 @@
 
   <!-- 外部CSSスタイルを読み込み -->
   <link rel="stylesheet" href="style.css" type="text/css" />
+  <link rel="stylesheet" href="security-styles.css" type="text/css" />
 
   <!-- PWA対応のマニフェスト -->
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- セキュリティヘッダー -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' https://firebasestorage.googleapis.com https://firebase.googleapis.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 </head>
 
 <body>
   <h1>プログラミング辞書</h1>
   
   <!-- memo.txtファイルの中身を表示 -->
-  <object class="box8" data="memo.txt" type="text/plain" width="100%" height="100%"></object>
+  <div class="box8 memo-display" id="memo-content">
+    <p>memo.txtの内容を読み込み中...</p>
+  </div>
 
   <!-- 注意事項のテキストファイル表示 -->
   <h2>注意事項</h2>
-  <object class="box8" data="注意事項.txt" type="text/plain" width="100%" height="100%"></object>
+  <div class="box8 notice-display" id="notice-content">
+    <p>注意事項を読み込み中...</p>
+  </div>
 
   <!-- ナビゲーションメニュー -->
   <div id="nav" class="box8">
@@ -47,7 +60,7 @@
 
   <!-- ファイルの中身を表示する領域 -->
   <div class="box8">
-    <pre id="file-content" style="white-space: pre-wrap; padding: 10px; font-size: 18px;max-height: 500px; overflow-y: auto;">選択したファイルの内容が表示されます。</pre>
+    <pre id="file-content">選択したファイルの内容が表示されます。</pre>
   </div>
 
   <!-- 各言語フォルダごとのファイル一覧 -->
@@ -79,205 +92,7 @@
   </div>
 
   <!-- Firebase JavaScript SDK をモジュール形式で読み込み -->
-  <script type="module">
-    // Firebase SDK（アプリ、ストレージ）をインポート
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import {
-      getStorage,
-      ref,
-      listAll,
-      getDownloadURL,
-      getBlob,
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-
-    // 🔒 セキュリティ改善: 設定を環境変数や外部ファイルから読み込む
-    let firebaseConfig = null;
-    let storage = null;
-    let fileCache = new Map(); // ファイルキャッシュ用
-
-    // 設定ファイルを安全に読み込む関数
-    async function loadFirebaseConfig() {
-      try {
-        // 本番環境では、これらの値を環境変数から取得
-        if (typeof process !== 'undefined' && process.env) {
-          firebaseConfig = {
-            apiKey: process.env.FIREBASE_API_KEY,
-            authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-            appId: process.env.FIREBASE_APP_ID,
-            measurementId: process.env.FIREBASE_MEASUREMENT_ID,
-          };
-        } else {
-          // 開発環境用: 外部設定ファイルを使用
-          const response = await fetch('./firebase-config.json');
-          if (response.ok) {
-            firebaseConfig = await response.json();
-          } else {
-            throw new Error('設定ファイルが見つかりません');
-          }
-        }
-      } catch (error) {
-        console.error('Firebase設定の読み込みに失敗しました:', error);
-        // フォールバック: 最小限の設定のみ使用
-        firebaseConfig = {
-          projectId: "my-website-2b713",
-          storageBucket: "my-website-2b713.appspot.com",
-          // 公開APIキーのみ（読み取り専用アクセス用）
-          apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis"
-        };
-      }
-    }
-
-    // Firebase アプリとストレージを初期化
-    async function initializeFirebase() {
-      await loadFirebaseConfig();
-
-      if (!firebaseConfig) {
-        throw new Error('Firebase設定が読み込めませんでした');
-      }
-
-      const app = initializeApp(firebaseConfig);
-      storage = getStorage(app);
-      console.log('Firebase初期化完了');
-    }
-
-    // 各言語ごとのストレージパスとHTML要素の対応表
-    const langs = [
-      { id: "fileList-html", folder: "uploads/HTML" },
-      { id: "fileList-css", folder: "uploads/CSS" },
-      { id: "fileList-js", folder: "uploads/JavaScript" },
-      { id: "fileList-java", folder: "uploads/Java" },
-      { id: "fileList-python", folder: "uploads/Python" },
-    ];
-
-    // ファイルコンテンツを非同期で読み込む関数
-    async function loadFileContent(itemRef) {
-      const filePath = itemRef.fullPath;
-      
-      // キャッシュがあるかチェック
-      if (fileCache.has(filePath)) {
-        return fileCache.get(filePath);
-      }
-
-      try {
-        const blob = await getBlob(itemRef);
-        const text = await blob.text();
-        
-        // キャッシュに保存
-        fileCache.set(filePath, text);
-        return text;
-      } catch (error) {
-        console.error(`ファイル読み込みエラー (${itemRef.name}):`, error);
-        return 'ファイルの読み込みに失敗しました';
-      }
-    }
-
-    // ファイルリストを表示する関数
-    function createFileListItem(itemRef, listElement) {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.href = "#";
-      a.textContent = itemRef.name;
-
-      // クリック時の処理
-      a.addEventListener("click", async (e) => {
-        e.preventDefault();
-        const fileContentElem = document.getElementById("file-content");
-        
-        // ローディング表示
-        fileContentElem.textContent = "読み込み中...";
-        
-        try {
-          const content = await loadFileContent(itemRef);
-          fileContentElem.textContent = content;
-        } catch (error) {
-          fileContentElem.textContent = `エラー: ${error.message}`;
-        }
-      });
-
-      li.appendChild(a);
-      listElement.appendChild(li);
-    }
-
-    // 各フォルダのファイル一覧を取得・表示
-    async function loadFolderFiles(langConfig) {
-      const { id, folder } = langConfig;
-      const listElement = document.getElementById(id);
-      
-      try {
-        const listRef = ref(storage, folder);
-        const res = await listAll(listRef);
-        
-        // リスト要素をクリア
-        listElement.innerHTML = '';
-        
-        if (res.items.length === 0) {
-          listElement.innerHTML = '<li>ファイルが見つかりません</li>';
-          return;
-        }
-
-        // ファイル名でソート
-        res.items.sort((a, b) => a.name.localeCompare(b.name));
-
-        // 各ファイルのリストアイテムを作成
-        res.items.forEach(itemRef => {
-          createFileListItem(itemRef, listElement);
-        });
-        
-        console.log(`${folder}: ${res.items.length}個のファイルを読み込みました`);
-        
-      } catch (error) {
-        console.error(`フォルダ読み込みエラー (${folder}):`, error);
-        listElement.innerHTML = `<li>エラー: ${error.message}</li>`;
-      }
-    }
-
-    // 初期化状態を更新
-    function updateInitializationStatus(message, isComplete = false) {
-      const statusElement = document.getElementById('initialization-status');
-      if (statusElement) {
-        statusElement.innerHTML = `<p>${message}</p>`;
-        if (isComplete) {
-          setTimeout(() => {
-            statusElement.style.display = 'none';
-          }, 2000);
-        }
-      }
-    }
-
-    // メイン処理
-    async function main() {
-      try {
-        updateInitializationStatus('Firebase初期化中...');
-        
-        // Firebase初期化
-        await initializeFirebase();
-        
-        updateInitializationStatus('ファイル一覧を読み込み中...');
-        
-        // 各フォルダのファイル一覧を並列で取得
-        const loadPromises = langs.map(langConfig => loadFolderFiles(langConfig));
-        await Promise.all(loadPromises);
-        
-        updateInitializationStatus('初期化完了！', true);
-        
-      } catch (error) {
-        console.error('アプリケーション初期化エラー:', error);
-        updateInitializationStatus(`初期化エラー: ${error.message}`);
-        
-        // エラー時の代替表示
-        langs.forEach(({ id }) => {
-          const listElement = document.getElementById(id);
-          listElement.innerHTML = `<li>読み込みエラー: ${error.message}</li>`;
-        });
-      }
-    }
-
-    // アプリケーション開始
-    main();
-  </script>
+  <script type="module" src="firebase-app.js"></script>
 
   <footer>
     <a href="#" class="btn-real-dent" id="scroll-top">
@@ -285,15 +100,7 @@
     </a>
   </footer>
 
-  <script>
-    document.getElementById("scroll-top").addEventListener("click", function (e) {
-      e.preventDefault();
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    });
-  </script>
+  <script src="scroll-top.js"></script>
 </body>
 
 </html>

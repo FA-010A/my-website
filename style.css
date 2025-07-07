@@ -28,7 +28,7 @@ p{
     margin: 0 auto;
 }
 object{
-    background-color: rgb(255, 214, 137);
+    background-color: #fff8e8;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -242,4 +242,12 @@ button[onclick="uploadTextAsFile()"]:hover {
     width: 100%;
     max-width: 500px;
   }
+}
+.box8.memo-display {
+  background: #e8f5e8 !important;
+  border-left: solid 10px #4caf50 !important;
+}
+.box8.notice-display{
+  background: #e8f5e8 !important;
+  border-left: solid 10px #4caf50 !important;
 }
