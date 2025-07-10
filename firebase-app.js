@@ -9,6 +9,9 @@ import {
   getBlob,
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
 // セキュリティ設定
 const SECURITY_CONFIG = {
   maxFileSize: 5 * 1024 * 1024, // 5MB
@@ -150,7 +153,6 @@ async function loadLocalFile(fileName) {
 // ファイルコンテンツを非同期で読み込む関数
 async function loadFileContent(itemRef) {
   const filePath = itemRef.fullPath;
-  const cacheKey = `${filePath}_${Date.now()}`;
   
   // レート制限チェック
   if (!rateLimiter.isAllowed('file-load')) {
@@ -189,6 +191,63 @@ async function loadFileContent(itemRef) {
   } catch (error) {
     console.error(`ファイル読み込みエラー (${itemRef.name}):`, error);
     throw error;
+  }
+}
+
+// ファイルを事前にキャッシュに保存する関数
+async function cacheFileContent(itemRef) {
+  const filePath = itemRef.fullPath;
+  
+  // 既にキャッシュされているかチェック
+  if (fileCache.has(filePath)) {
+    const cached = fileCache.get(filePath);
+    if (Date.now() - cached.timestamp < SECURITY_CONFIG.cacheExpiration) {
+      return; // 既にキャッシュされている
+    }
+  }
+
+  try {
+    // ファイル名の検証
+    validateFileName(itemRef.name);
+    
+    const blob = await getBlob(itemRef);
+    
+    // ファイルサイズチェック
+    if (blob.size > SECURITY_CONFIG.maxFileSize) {
+      console.warn(`ファイルサイズが大きすぎます: ${itemRef.name}`);
+      return;
+    }
+    
+    const text = await blob.text();
+    const sanitizedText = sanitizeText(text);
+    
+    // キャッシュに保存
+    fileCache.set(filePath, {
+      content: sanitizedText,
+      timestamp: Date.now()
+    });
+    
+    console.log(`キャッシュに保存: ${itemRef.name}`);
+    
+  } catch (error) {
+    console.warn(`キャッシュ保存エラー (${itemRef.name}):`, error);
+  }
+}
+
+// フォルダ内の全ファイルを事前にキャッシュする関数
+async function cacheAllFilesInFolder(folder) {
+  try {
+    const listRef = ref(storage, folder);
+    const res = await listAll(listRef);
+    
+    // 各ファイルをキャッシュに保存（並列処理）
+    const cachePromises = res.items.map(itemRef => cacheFileContent(itemRef));
+    await Promise.all(cachePromises);
+    
+    console.log(`${folder}: ${res.items.length}個のファイルをキャッシュしました`);
+    
+  } catch (error) {
+    console.error(`フォルダキャッシュエラー (${folder}):`, error);
   }
 }
 
@@ -330,6 +389,12 @@ async function main() {
     // 各フォルダのファイル一覧を並列で取得
     const loadPromises = langs.map(langConfig => loadFolderFiles(langConfig));
     await Promise.all(loadPromises);
+    
+    updateInitializationStatus('ファイルをキャッシュに保存中...');
+    
+    // 全フォルダのファイルを事前にキャッシュ
+    const cachePromises = langs.map(langConfig => cacheAllFilesInFolder(langConfig.folder));
+    await Promise.all(cachePromises);
     
     updateInitializationStatus('初期化完了！', true);
     
