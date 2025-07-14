@@ -44,7 +44,7 @@ let firebaseConfig = null;
 let storage = null;
 let fileCache = new Map(); // ファイルキャッシュ用
 
-// 入力値のサニタイズ
+// 入力値のサニタイズ（ファイル名、エラーメッセージ等の表示用）
 function sanitizeText(text) {
   const div = document.createElement('div');
   div.textContent = text;
@@ -143,7 +143,8 @@ async function loadLocalFile(fileName) {
       throw new Error(`ファイルが見つかりません: ${fileName}`);
     }
     const text = await response.text();
-    return sanitizeText(text);
+    // ローカルファイルの内容はそのまま返す（HTMLエスケープしない）
+    return text;
   } catch (error) {
     console.error(`ローカルファイル読み込みエラー: ${fileName}`, error);
     return 'ファイルの読み込みに失敗しました';
@@ -179,15 +180,15 @@ async function loadFileContent(itemRef) {
     }
     
     const text = await blob.text();
-    const sanitizedText = sanitizeText(text);
+    // ファイルの内容はそのまま保存（HTMLエスケープしない）
     
     // キャッシュに保存
     fileCache.set(filePath, {
-      content: sanitizedText,
+      content: text,
       timestamp: Date.now()
     });
     
-    return sanitizedText;
+    return text;
   } catch (error) {
     console.error(`ファイル読み込みエラー (${itemRef.name}):`, error);
     throw error;
@@ -219,11 +220,11 @@ async function cacheFileContent(itemRef) {
     }
     
     const text = await blob.text();
-    const sanitizedText = sanitizeText(text);
+    // ファイルの内容はそのまま保存（HTMLエスケープしない）
     
     // キャッシュに保存
     fileCache.set(filePath, {
-      content: sanitizedText,
+      content: text,
       timestamp: Date.now()
     });
     
@@ -256,7 +257,7 @@ function createFileListItem(itemRef, listElement) {
   const li = document.createElement("li");
   const a = document.createElement("a");
   a.href = "#";
-  a.textContent = sanitizeText(itemRef.name);
+  a.textContent = sanitizeText(itemRef.name); // ファイル名のみサニタイズ
   a.setAttribute('data-file-path', itemRef.fullPath);
 
   // クリック時の処理
@@ -270,8 +271,10 @@ function createFileListItem(itemRef, listElement) {
     
     try {
       const content = await loadFileContent(itemRef);
+      // ファイル内容をそのまま表示（HTMLエスケープしない）
       fileContentElem.textContent = content;
     } catch (error) {
+      // エラーメッセージのみサニタイズ
       fileContentElem.textContent = `エラー: ${error.message}`;
       fileContentElem.classList.add('error-message');
     } finally {
@@ -351,6 +354,7 @@ async function loadLocalFiles() {
     const memoContent = await loadLocalFile('memo.txt');
     const memoElement = document.getElementById('memo-content');
     if (memoElement) {
+      // pre要素でプレーンテキストとして表示
       memoElement.innerHTML = `<pre>${memoContent}</pre>`;
     }
 
@@ -358,6 +362,7 @@ async function loadLocalFiles() {
     const noticeContent = await loadLocalFile('注意事項.txt');
     const noticeElement = document.getElementById('notice-content');
     if (noticeElement) {
+      // pre要素でプレーンテキストとして表示
       noticeElement.innerHTML = `<pre>${noticeContent}</pre>`;
     }
   } catch (error) {
