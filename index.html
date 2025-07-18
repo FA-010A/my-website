@@ -12,12 +12,13 @@
 
   <!-- PWA対応のマニフェスト -->
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
-        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
   <!-- セキュリティヘッダー -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' https://firebasestorage.googleapis.com https://firebase.googleapis.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com;">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' https://firebasestorage.googleapis.com https://firebase.googleapis.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com;">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -25,7 +26,7 @@
 
 <body>
   <h1>プログラミング辞書</h1>
-  
+
   <!-- memo.txtファイルの中身を表示 -->
   <div class="box8 memo-display" id="memo-content">
     <p>memo.txtの内容を読み込み中...</p>
@@ -67,28 +68,38 @@
   <h2>テキストファイル一覧</h2>
 
   <div class="box8">
-    <h3>HTML</h3>
-    <ul id="fileList-html">読み込み中...</ul>
+    <details class="accordion">
+      <summary class="accordion_title">HTML</summary>
+      <ul id="fileList-html" class="accordion_contents">読み込み中...</ul>
+    </details>
   </div>
 
   <div class="box8">
-    <h3>CSS</h3>
-    <ul id="fileList-css">読み込み中...</ul>
+    <details class="accordion">
+      <summary class="accordion_title">CSS</summary>
+      <ul id="fileList-css" class="accordion_contents">読み込み中...</ul>
+    </details>
   </div>
 
   <div class="box8">
-    <h3>JavaScript</h3>
-    <ul id="fileList-js">読み込み中...</ul>
+    <details class="accordion">
+      <summary class="accordion_title">JavaScript</summary>
+      <ul id="fileList-js" class="accordion_contents">読み込み中...</ul>
+    </details>
   </div>
 
   <div class="box8">
-    <h3>Java</h3>
-    <ul id="fileList-java">読み込み中...</ul>
+    <details class="accordion">
+      <summary class="accordion_title">Java</summary>
+      <ul id="fileList-java" class="accordion_contents">読み込み中...</ul>
+    </details>
   </div>
 
   <div class="box8">
-    <h3>Python</h3>
-    <ul id="fileList-python">読み込み中...</ul>
+    <details class="accordion">
+      <summary class="accordion_title">Python</summary>
+      <ul id="fileList-python" class="accordion_contents">読み込み中...</ul>
+    </details>
   </div>
 
   <!-- Firebase JavaScript SDK をモジュール形式で読み込み -->

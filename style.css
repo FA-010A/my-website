@@ -251,3 +251,124 @@ button[onclick="uploadTextAsFile()"]:hover {
   background: #e8f5e8 !important;
   border-left: solid 10px #4caf50 !important;
 }
+
+/* アコーディオンスタイル */
+.accordion {
+  margin: 2em auto;
+  width: 80vw;
+  max-width: 100%;
+}
+
+.accordion_title {
+  position: relative;
+  border: none;
+  display: block;
+  list-style: none;
+  width: 80%;
+  cursor: pointer;
+  background: #fff8e8;
+  border: 2px solid #39a0e5;
+  border-radius: 8px;
+  padding: 1.4em 1.6em 1.4em;
+  line-height: 1.6em;
+  color: #232323;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  margin-bottom: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.accordion_title:hover {
+  background: #f0f8ff;
+  border-color: #1e88e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+summary.accordion_title::-webkit-details-marker {
+  display: none;
+}
+
+.accordion_title:after {
+  content: "+";
+  position: absolute;
+  top: calc(50% - 0.5em);
+  right: 20px;
+  line-height: 1;
+  padding: 0;
+  pointer-events: none;
+  font-size: 1.5em;
+  color: #39a0e5;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+.accordion::details-content {
+  opacity: 0;
+  block-size: 0;
+  transition: .3s;
+  transition-property: display, opacity, block-size, padding;
+  transition-behavior: allow-discrete;
+  line-height: 1.6em;
+}
+
+.accordion .accordion_content {
+  padding: 0 2em 0 3em;
+  background: #fff8e8;
+  border: 2px solid #39a0e5;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  color: #232323;
+  margin-top: -2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.accordion .accordion_content > *:first-of-type {
+  margin-top: 0;
+}
+
+.accordion .accordion_content > *:last-of-type {
+  margin-bottom: 0;
+}
+
+.accordion[open]::details-content {
+  opacity: 1;
+  block-size: auto;
+  block-size: calc-size(auto, size);
+}
+
+.accordion[open] .accordion_content {
+  padding: 1.4em 2em 1.4em 3em;
+}
+
+.accordion[open] .accordion_title {
+  border-radius: 8px 8px 0 0;
+  background: #e9f4ff;
+  border-bottom-color: #39a0e5;
+}
+
+.accordion[open] .accordion_title:after {
+  content: "-";
+  transform: rotate(180deg);
+}
+
+/* アコーディオン内のリストスタイル調整 */
+.accordion .accordion_content ul li,
+.accordion .accordion_content ol li {
+  color: #1e88e5;
+  border-left: solid 6px #1e88e5;
+  background: #e3f2fd;
+  margin-bottom: 3px;
+  line-height: 1.5;
+  padding: 0.5em;
+  list-style-type: none!important;
+}
+
+/* アコーディオン内のボックススタイル調整 */
+.accordion .accordion_content .box8 {
+  padding: 0.5em 1em;
+  margin: 1em 0;
+  color: #232323;
+  background: #fff8e8;
+  border-left: solid 10px #ffc06e;
+}
