@@ -163,25 +163,6 @@
   }
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  #file-content {
-    background-color: #2d2d2d;
-    color: #f0f0f0;
-    border-color: #555;
-  }
-  
-  .memo-display, .notice-display {
-    background-color: #3d3d3d;
-    color: #f0f0f0;
-  }
-  
-  #initialization-status {
-    background-color: #1a1a2e;
-    color: #4fc3f7;
-  }
-}
-
 /* アクセシビリティ向上 */
 .memo-display:focus-within,
 .notice-display:focus-within,
