@@ -1,4 +1,6 @@
 // firebase-app.js
+//Firebaseの設定及びWebアプリケーションの基本動作用JavaScript
+
 // Firebase SDK（アプリ、ストレージ）をインポート
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
@@ -9,15 +11,16 @@ import {
   getBlob,
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+if ("serviceWorker" in navigator) {//ブラウザがServisWorkerに対応しているか確認
+  navigator.serviceWorker.register("sw.js");//ServiceWorkerを登録
 }
+
 // セキュリティ設定
 const SECURITY_CONFIG = {
-  maxFileSize: 5 * 1024 * 1024, // 5MB
-  allowedFileTypes: ['.txt', '.md', '.html', '.css', '.js', '.java', '.py'],
+  maxFileSize: 5 * 1024 * 1024, // ファイルの最大容量 txtファイルのみなので5MBで十分と判断
+  allowedFileTypes: ['.txt'],// 許可されたファイル拡張子 今回はテキストファイルのみ許可、任意で追加可能
   rateLimitRequests: 100, // 1分間の最大リクエスト数
-  cacheExpiration: 5 * 60 * 1000, // 5分
+  cacheExpiration: 5 * 60 * 1000, // キャッシュの有効時間 5分
 };
 
 // レート制限用
@@ -25,37 +28,39 @@ const rateLimiter = {
   requests: new Map(),
   isAllowed(key) {
     const now = Date.now();
-    const requests = this.requests.get(key) || [];
-    // 1分以内のリクエストをフィルタ
+    const requests = this.requests.get(key) || [];//リクエストの履歴を取得
+    // 1分以内のリクエストを確認
     const recentRequests = requests.filter(time => now - time < 60000);
     
-    if (recentRequests.length >= SECURITY_CONFIG.rateLimitRequests) {
+    if (recentRequests.length >= SECURITY_CONFIG.rateLimitRequests) {// 今回は1分間で100リクエストまで許可、それ以上なら拒否
       return false;
     }
-    
+    // リクエストを記録して許可
     recentRequests.push(now);
     this.requests.set(key, recentRequests);
     return true;
   }
 };
 
-// 🔒 セキュリティ改善: 設定を環境変数や外部ファイルから読み込む
+// 設定を環境変数や外部ファイルから読み込む
 let firebaseConfig = null;
 let storage = null;
 let fileCache = new Map(); // ファイルキャッシュ用
 
-// 入力値のサニタイズ（ファイル名、エラーメッセージ等の表示用）
+// 入力値のサニタイズ（ファイル名、エラーメッセージ等の表示用）XSS対策
 function sanitizeText(text) {
   const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  div.textContent = text;//HTMLではなくテキストとして取得
+  return div.innerHTML;//HTMLとして返す
 }
 
-// ファイル名の検証
-function validateFileName(fileName) {
+// ファイル名の検証用関数
+function validateFileName(fileName) {//引数はファイル名
+
   // 危険な文字をチェック
-  const dangerousChars = /[<>:"/\\|?*\x00-\x1F]/;
-  if (dangerousChars.test(fileName)) {
+  const dangerousChars = /[<>:"/\\|?*\x00-\x1F]/;//正規表現で文字列をチェック
+
+  if (dangerousChars.test(fileName)) {//不正な文字が含まれている場合
     throw new Error('不正なファイル名です');
   }
   
@@ -126,7 +131,8 @@ async function initializeFirebase() {
   console.log('Firebase初期化完了');
 }
 
-// 各言語ごとのストレージパスとHTML要素の対応表
+//各言語ごとのストレージパスとHTML要素の対応表
+//Firebase Storageのフォルダ構成に合わせて設定
 const langs = [
   { id: "fileList-html", folder: "uploads/HTML" },
   { id: "fileList-css", folder: "uploads/CSS" },
@@ -143,7 +149,7 @@ async function loadLocalFile(fileName) {
       throw new Error(`ファイルが見つかりません: ${fileName}`);
     }
     const text = await response.text();
-    // ローカルファイルの内容はそのまま返す（HTMLエスケープしない）
+    // ローカルファイルの内容はそのまま返す
     return text;
   } catch (error) {
     console.error(`ローカルファイル読み込みエラー: ${fileName}`, error);
