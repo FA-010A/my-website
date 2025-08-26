@@ -1,82 +1,59 @@
 // firebase-app.js
-//Firebaseの設定及びWebアプリケーションの基本動作用JavaScript
-
-// Firebase SDK（アプリ、ストレージ）をインポート
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import {
-  getStorage,
-  ref,
-  listAll,
-  getDownloadURL,
-  getBlob,
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+import { getStorage, ref, listAll, getBlob } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-if ("serviceWorker" in navigator) {//ブラウザがServisWorkerに対応しているか確認
-  navigator.serviceWorker.register("sw.js");//ServiceWorkerを登録
+// Service Worker登録
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
 }
-
-// セキュリティ設定
-const SECURITY_CONFIG = {
-  maxFileSize: 5 * 1024 * 1024, // ファイルの最大容量 txtファイルのみなので5MBで十分と判断
-  allowedFileTypes: ['.txt'],// 許可されたファイル拡張子 今回はテキストファイルのみ許可、任意で追加可能
-  rateLimitRequests: 100, // 1分間の最大リクエスト数
-  cacheExpiration: 5 * 60 * 1000, // キャッシュの有効時間 5分
+// 設定
+const CONFIG = {
+  maxFileSize: 5 * 1024 * 1024,
+  allowedFileTypes: ['.txt'],
+  cacheExpiration: 5 * 60 * 1000
 };
 
-// レート制限用
-const rateLimiter = {
-  requests: new Map(),
-  isAllowed(key) {
-    const now = Date.now();
-    const requests = this.requests.get(key) || [];//リクエストの履歴を取得
-    // 1分以内のリクエストを確認
-    const recentRequests = requests.filter(time => now - time < 60000);
-    
-    if (recentRequests.length >= SECURITY_CONFIG.rateLimitRequests) {// 今回は1分間で100リクエストまで許可、それ以上なら拒否
-      return false;
-    }
-    // リクエストを記録して許可
-    recentRequests.push(now);
-    this.requests.set(key, recentRequests);
-    return true;
-  }
-};
-
-// 設定を環境変数や外部ファイルから読み込む
+// グローバル変数
 let firebaseConfig = null;
 let storage = null;
-let fileCache = new Map(); // ファイルキャッシュ用
+const fileCache = new Map();
 
-// 入力値のサニタイズ（ファイル名、エラーメッセージ等の表示用）XSS対策
-function sanitizeText(text) {
-  const div = document.createElement('div');
-  div.textContent = text;//HTMLではなくテキストとして取得
-  return div.innerHTML;//HTMLとして返す
-}
+// 言語フォルダ設定
+const folders = [
+  { id: "fileList-html", path: "uploads/HTML" },
+  { id: "fileList-css", path: "uploads/CSS" },
+  { id: "fileList-js", path: "uploads/JavaScript" },
+  { id: "fileList-java", path: "uploads/Java" },
+  { id: "fileList-python", path: "uploads/Python" }
+];
 
-// ファイル名の検証用関数
-function validateFileName(fileName) {//引数はファイル名
+// XSS対策のためのサニタイズ関数
+const sanitize = text => {
+  const div = document.createElement('div'); // 一時的なDOM要素を作成
+  div.textContent = text;                   // 入力文字列を「テキスト」として代入（ここで自動エスケープ）
+  return div.innerHTML;                     // エスケープ後の文字列を返す
+};
 
-  // 危険な文字をチェック
-  const dangerousChars = /[<>:"/\\|?*\x00-\x1F]/;//正規表現で文字列をチェック
-
-  if (dangerousChars.test(fileName)) {//不正な文字が含まれている場合
+// ファイル名検証
+function validateFileName(fileName) {
+  // 危険な文字チェック
+  const dangerousChars = /[<>:"/\\|?*\x00-\x1F]/;
+  if (dangerousChars.test(fileName)) {
     throw new Error('不正なファイル名です');
   }
   
-  // 許可された拡張子をチェック
+  // 拡張子チェック
   const ext = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
-  if (!SECURITY_CONFIG.allowedFileTypes.includes(ext)) {
+  if (!CONFIG.allowedFileTypes.includes(ext)) {
     throw new Error('許可されていないファイル形式です');
   }
-  
   return true;
 }
 
-// 設定ファイルを安全に読み込む関数
+// Firebase設定読み込み
 async function loadFirebaseConfig() {
   try {
-    // 環境変数から設定を読み込む（本番環境）
+    // 環境変数チェック
     if (typeof process !== 'undefined' && process.env) {
       firebaseConfig = {
         apiKey: process.env.FIREBASE_API_KEY,
@@ -88,7 +65,7 @@ async function loadFirebaseConfig() {
         measurementId: process.env.FIREBASE_MEASUREMENT_ID,
       };
     } else {
-      // 外部設定ファイルを使用（開発環境）
+      // 外部設定ファイル
       try {
         const response = await fetch('./firebase-config.json');
         if (response.ok) {
@@ -97,331 +74,209 @@ async function loadFirebaseConfig() {
           throw new Error('設定ファイルが見つかりません');
         }
       } catch (fetchError) {
-        // フォールバック: 最小限の設定のみ使用（読み取り専用）
+        // フォールバック設定
         firebaseConfig = {
           projectId: "my-website-2b713",
           storageBucket: "my-website-2b713.appspot.com",
-          // 公開読み取り専用APIキー
           apiKey: "AIzaSyB-Wck9-5KQJLVfWWhE8yBdaW5Jl_3XWis"
         };
       }
     }
     
-    // 設定値の検証
+    // 必須項目チェック
     if (!firebaseConfig.projectId || !firebaseConfig.storageBucket) {
       throw new Error('必須の設定値が不足しています');
     }
-    
   } catch (error) {
     console.error('Firebase設定の読み込みに失敗しました:', error);
     throw error;
   }
 }
 
-// Firebase アプリとストレージを初期化
-async function initializeFirebase() {
+// Firebase初期化
+async function initFirebase() {
   await loadFirebaseConfig();
-
   if (!firebaseConfig) {
     throw new Error('Firebase設定が読み込めませんでした');
   }
-
   const app = initializeApp(firebaseConfig);
   storage = getStorage(app);
   console.log('Firebase初期化完了');
 }
 
-//各言語ごとのストレージパスとHTML要素の対応表
-//Firebase Storageのフォルダ構成に合わせて設定
-const langs = [
-  { id: "fileList-html", folder: "uploads/HTML" },
-  { id: "fileList-css", folder: "uploads/CSS" },
-  { id: "fileList-js", folder: "uploads/JavaScript" },
-  { id: "fileList-java", folder: "uploads/Java" },
-  { id: "fileList-python", folder: "uploads/Python" },
-];
-
-// ローカルファイルの安全な読み込み
-async function loadLocalFile(fileName) {
-  try {
-    const response = await fetch(fileName);
-    if (!response.ok) {
-      throw new Error(`ファイルが見つかりません: ${fileName}`);
-    }
-    const text = await response.text();
-    // ローカルファイルの内容はそのまま返す
-    return text;
-  } catch (error) {
-    console.error(`ローカルファイル読み込みエラー: ${fileName}`, error);
-    return 'ファイルの読み込みに失敗しました';
-  }
-}
-
-// ファイルコンテンツを非同期で読み込む関数
-async function loadFileContent(itemRef) {
+// ファイル内容読み込み
+async function loadFile(itemRef) {
   const filePath = itemRef.fullPath;
-  
-  // レート制限チェック
-  if (!rateLimiter.isAllowed('file-load')) {
-    throw new Error('リクエストが多すぎます。しばらくお待ちください。');
-  }
-  
-  // キャッシュがあるかチェック
+  // キャッシュチェック
   if (fileCache.has(filePath)) {
     const cached = fileCache.get(filePath);
-    if (Date.now() - cached.timestamp < SECURITY_CONFIG.cacheExpiration) {
+    if (Date.now() - cached.timestamp < CONFIG.cacheExpiration) {
       return cached.content;
     }
   }
-
-  try {
-    // ファイル名の検証
-    validateFileName(itemRef.name);
-    
-    const blob = await getBlob(itemRef);
-    
-    // ファイルサイズチェック
-    if (blob.size > SECURITY_CONFIG.maxFileSize) {
-      throw new Error('ファイルサイズが大きすぎます');
-    }
-    
-    const text = await blob.text();
-    // ファイルの内容はそのまま保存（HTMLエスケープしない）
-    
-    // キャッシュに保存
-    fileCache.set(filePath, {
-      content: text,
-      timestamp: Date.now()
-    });
-    
-    return text;
-  } catch (error) {
-    console.error(`ファイル読み込みエラー (${itemRef.name}):`, error);
-    throw error;
+  // ファイル名検証
+  validateFileName(itemRef.name);
+  const blob = await getBlob(itemRef);
+  if (blob.size > CONFIG.maxFileSize) {
+    throw new Error('ファイルサイズが大きすぎます');
   }
+  const content = await blob.text();
+  // キャッシュ保存
+  fileCache.set(filePath, {
+    content: content,
+    timestamp: Date.now()
+  });
+  return content;
 }
 
-// ファイルを事前にキャッシュに保存する関数
+// 事前キャッシュ
 async function cacheFileContent(itemRef) {
   const filePath = itemRef.fullPath;
-  
-  // 既にキャッシュされているかチェック
+  // 既存キャッシュチェック
   if (fileCache.has(filePath)) {
     const cached = fileCache.get(filePath);
-    if (Date.now() - cached.timestamp < SECURITY_CONFIG.cacheExpiration) {
-      return; // 既にキャッシュされている
+    if (Date.now() - cached.timestamp < CONFIG.cacheExpiration) {
+      return;
     }
   }
-
   try {
-    // ファイル名の検証
     validateFileName(itemRef.name);
-    
     const blob = await getBlob(itemRef);
-    
-    // ファイルサイズチェック
-    if (blob.size > SECURITY_CONFIG.maxFileSize) {
+    if (blob.size > CONFIG.maxFileSize) {
       console.warn(`ファイルサイズが大きすぎます: ${itemRef.name}`);
       return;
     }
-    
     const text = await blob.text();
-    // ファイルの内容はそのまま保存（HTMLエスケープしない）
-    
-    // キャッシュに保存
     fileCache.set(filePath, {
       content: text,
       timestamp: Date.now()
     });
-    
-    console.log(`キャッシュに保存: ${itemRef.name}`);
-    
+    console.log(`キャッシュ保存: ${itemRef.name}`);
   } catch (error) {
     console.warn(`キャッシュ保存エラー (${itemRef.name}):`, error);
   }
 }
 
-// フォルダ内の全ファイルを事前にキャッシュする関数
+// フォルダ全体を事前キャッシュ
 async function cacheAllFilesInFolder(folder) {
   try {
     const listRef = ref(storage, folder);
     const res = await listAll(listRef);
-    
-    // 各ファイルをキャッシュに保存（並列処理）
     const cachePromises = res.items.map(itemRef => cacheFileContent(itemRef));
     await Promise.all(cachePromises);
-    
     console.log(`${folder}: ${res.items.length}個のファイルをキャッシュしました`);
-    
   } catch (error) {
     console.error(`フォルダキャッシュエラー (${folder}):`, error);
   }
 }
 
-// ファイルリストを表示する関数
-function createFileListItem(itemRef, listElement) {
-  const li = document.createElement("li");
-  const a = document.createElement("a");
-  a.href = "#";
-  a.textContent = sanitizeText(itemRef.name); // ファイル名のみサニタイズ
-  a.setAttribute('data-file-path', itemRef.fullPath);
-
-  // クリック時の処理
-  a.addEventListener("click", async (e) => {
+// ファイルリスト作成
+function createFileItem(itemRef, container) {
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  a.href = '#';
+  a.textContent = sanitize(itemRef.name);
+  a.onclick = async (e) => {
     e.preventDefault();
-    const fileContentElem = document.getElementById("file-content");
-    
-    // ローディング表示
-    fileContentElem.textContent = "読み込み中...";
-    fileContentElem.classList.add('loading');
-    
+    const contentEl = document.getElementById('file-content');
+    contentEl.textContent = '読み込み中...';
     try {
-      const content = await loadFileContent(itemRef);
-      // ファイル内容をそのまま表示（HTMLエスケープしない）
-      fileContentElem.textContent = content;
+      const content = await loadFile(itemRef);
+      contentEl.textContent = content;
     } catch (error) {
-      // エラーメッセージのみサニタイズ
-      fileContentElem.textContent = `エラー: ${error.message}`;
-      fileContentElem.classList.add('error-message');
-    } finally {
-      fileContentElem.classList.remove('loading');
+      contentEl.textContent = `エラー: ${error.message}`;
     }
-  });
-
+  };
+  
   li.appendChild(a);
-  listElement.appendChild(li);
+  container.appendChild(li);
 }
 
-// 各フォルダのファイル一覧を取得・表示
-async function loadFolderFiles(langConfig) {
-  const { id, folder } = langConfig;
-  const listElement = document.getElementById(id);
-  
-  if (!listElement) {
-    console.error(`要素が見つかりません: ${id}`);
+// フォルダのファイル一覧取得
+async function loadFolder(config) {
+  const container = document.getElementById(config.id);
+  if (!container) {
+    console.error(`要素が見つかりません: ${config.id}`);
     return;
   }
-  
   try {
-    // レート制限チェック
-    if (!rateLimiter.isAllowed('folder-load')) {
-      throw new Error('リクエストが多すぎます。しばらくお待ちください。');
-    }
-    
-    const listRef = ref(storage, folder);
-    const res = await listAll(listRef);
-    
-    // リスト要素をクリア
-    listElement.innerHTML = '';
-    
-    if (res.items.length === 0) {
-      listElement.innerHTML = '<li>ファイルが見つかりません</li>';
+    const listRef = ref(storage, config.path);
+    const result = await listAll(listRef);
+    container.innerHTML = '';
+    if (result.items.length === 0) {
+      container.innerHTML = '<li>ファイルが見つかりません</li>';
       return;
     }
-
-    // ファイル名でソート
-    res.items.sort((a, b) => a.name.localeCompare(b.name));
-
-    // 各ファイルのリストアイテムを作成
-    res.items.forEach(itemRef => {
+    result.items.forEach(itemRef => {
       try {
         validateFileName(itemRef.name);
-        createFileListItem(itemRef, listElement);
+        createFileItem(itemRef, container);
       } catch (error) {
         console.warn(`スキップされたファイル: ${itemRef.name}`, error);
       }
     });
-    
-    console.log(`${folder}: ${res.items.length}個のファイルを読み込みました`);
-    
+    console.log(`${config.path}: ${result.items.length}個のファイルを読み込みました`);
   } catch (error) {
-    console.error(`フォルダ読み込みエラー (${folder}):`, error);
-    listElement.innerHTML = `<li>エラー: ${sanitizeText(error.message)}</li>`;
+    console.error(`フォルダ読み込みエラー (${config.path}):`, error);
+    container.innerHTML = `<li>エラー: ${sanitize(error.message)}</li>`;
   }
 }
 
-// 初期化状態を更新
-function updateInitializationStatus(message, isComplete = false) {
-  const statusElement = document.getElementById('initialization-status');
-  if (statusElement) {
-    statusElement.innerHTML = `<p>${sanitizeText(message)}</p>`;
-    if (isComplete) {
-      setTimeout(() => {
-        statusElement.style.display = 'none';
-      }, 2000);
-    }
-  }
-}
-
-// ローカルファイルの読み込み
+// ローカルファイル読み込み
 async function loadLocalFiles() {
-  try {
-    // memo.txtの読み込み
-    const memoContent = await loadLocalFile('memo.txt');
-    const memoElement = document.getElementById('memo-content');
-    if (memoElement) {
-      // pre要素でプレーンテキストとして表示
-      memoElement.innerHTML = `<pre>${memoContent}</pre>`;
+  //ローカルで作成しているファイル読み込み
+  const files = [
+    { name: 'memo.txt', elementId: 'memo-content' },
+    { name: '注意事項.txt', elementId: 'notice-content' }
+  ];
+  for (const file of files) {
+    try {
+      const response = await fetch(file.name);
+      if (!response.ok) {
+        throw new Error(`ファイルが見つかりません: ${file.name}`);
+      }
+      const content = await response.text();
+      const element = document.getElementById(file.elementId);
+      if (element) {
+        element.innerHTML = `<pre>${content}</pre>`;
+      }
+    } catch (error) {
+      console.error(`ローカルファイル読み込みエラー: ${file.name}`, error);
     }
-
-    // 注意事項.txtの読み込み
-    const noticeContent = await loadLocalFile('注意事項.txt');
-    const noticeElement = document.getElementById('notice-content');
-    if (noticeElement) {
-      // pre要素でプレーンテキストとして表示
-      noticeElement.innerHTML = `<pre>${noticeContent}</pre>`;
-    }
-  } catch (error) {
-    console.error('ローカルファイルの読み込みに失敗しました:', error);
   }
 }
-
-// エラーハンドリング
-window.addEventListener('error', (event) => {
-  console.error('グローバルエラー:', event.error);
-  updateInitializationStatus('エラーが発生しました。ページを再読み込みしてください。');
-});
-
+//メイン処理で発生するステータスの更新を行う
+function updateStatus(message, isComplete = false) {
+  const statusEl = document.getElementById('initialization-status');
+  if (statusEl) {
+    statusEl.textContent = message;
+    if (isComplete) {// 完了した場合メッセージは2秒後に非表示
+      setTimeout(() => statusEl.style.display = 'none', 2000);
+    }
+  }
+}
 // メイン処理
 async function main() {
   try {
-    updateInitializationStatus('Firebase初期化中...');
+    updateStatus('Firebase初期化中...');
+    await initFirebase();
     
-    // Firebase初期化
-    await initializeFirebase();
-    
-    updateInitializationStatus('ローカルファイルを読み込み中...');
-    
-    // ローカルファイルの読み込み
+    updateStatus('ローカルファイルを読み込み中...');
     await loadLocalFiles();
     
-    updateInitializationStatus('ファイル一覧を読み込み中...');
+    updateStatus('ファイル一覧を読み込み中...');
+    await Promise.all(folders.map(loadFolder));
     
-    // 各フォルダのファイル一覧を並列で取得
-    const loadPromises = langs.map(langConfig => loadFolderFiles(langConfig));
-    await Promise.all(loadPromises);
-    
-    updateInitializationStatus('ファイルをキャッシュに保存中...');
-    
-    // 全フォルダのファイルを事前にキャッシュ
-    const cachePromises = langs.map(langConfig => cacheAllFilesInFolder(langConfig.folder));
+    updateStatus('ファイルをキャッシュに保存中...');
+    const cachePromises = folders.map(config => cacheAllFilesInFolder(config.path));
     await Promise.all(cachePromises);
     
-    updateInitializationStatus('初期化完了！', true);
-    
+    updateStatus('初期化完了！', true);
   } catch (error) {
     console.error('アプリケーション初期化エラー:', error);
-    updateInitializationStatus(`初期化エラー: ${error.message}`);
-    
-    // エラー時の代替表示
-    langs.forEach(({ id }) => {
-      const listElement = document.getElementById(id);
-      if (listElement) {
-        listElement.innerHTML = `<li>読み込みエラー: ${sanitizeText(error.message)}</li>`;
-      }
-    });
+    updateStatus(`初期化エラー: ${error.message}`);
   }
 }
 
-// アプリケーション開始
+// 実行
 main();
